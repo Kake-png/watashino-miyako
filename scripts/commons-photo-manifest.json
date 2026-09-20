@@ -1,0 +1,79 @@
+[
+  {
+    "key": "osaki-station",
+    "station": "osaki",
+    "title": "File:Osaki station 2024 2.jpg",
+    "alt": "大崎駅の駅舎と駅前",
+    "caption": "駅前は歩行者デッキと大規模な建物が連続する。地上へ下りた後の住宅地とのつながりを確認したい。"
+  },
+  {
+    "key": "gotanda-view",
+    "station": "gotanda",
+    "title": "File:From Gotanda station, looking towards Osaki.jpg",
+    "alt": "五反田駅から大崎方向を見た線路と街並み",
+    "caption": "線路、川、幹線道路、坂が近接する五反田。駅からどちらへ抜けるかで帰宅経路が大きく変わる。"
+  },
+  {
+    "key": "musashikoyama-palm",
+    "station": "musashikoyama",
+    "title": "File:Musashi-koyama Palm -01.jpg",
+    "alt": "武蔵小山のパルム商店街",
+    "caption": "駅から長く続く商店街は、雨の日の買い物にも使いやすい。撮影時期が古いため店舗の現況は別途確認したい。"
+  },
+  {
+    "key": "togoshiginza-station",
+    "station": "togoshiginza",
+    "title": "File:Togoshi-Ginza Station(GotandaGates).jpg",
+    "alt": "戸越銀座駅の五反田方面改札",
+    "caption": "ホームと改札が商店街の生活動線に直接つながる。駅前だけでなく商店街のどの区間に住むかが重要になる。"
+  },
+  {
+    "key": "nakanobu-skiproad",
+    "station": "nakanobu",
+    "title": "File:Nakanobu skip road shinagawa.JPG",
+    "alt": "中延の商店街スキップロード",
+    "caption": "二つの鉄道路線の間に日常の商店街が続く。古い写真のため、街路の骨格を見る資料として扱う。"
+  },
+  {
+    "key": "hatanodai-platform",
+    "station": "hatanodai",
+    "title": "File:Hatanodai-STA Home3-4.jpg",
+    "alt": "旗の台駅のホーム",
+    "caption": "大井町線と池上線が交わる駅。乗換の便利さに対し、駅の外は小さな通りと住宅地へすぐ切り替わる。"
+  },
+  {
+    "key": "ookayama-station",
+    "station": "ookayama",
+    "title": "File:Ookayama eki.png",
+    "alt": "大岡山駅前",
+    "caption": "病院と大学が駅前にあり、その外側に住宅地が広がる。撮影時期が古いため建物の現況は確認が必要。"
+  },
+  {
+    "key": "jiyugaoka-station",
+    "station": "jiyugaoka",
+    "title": "File:Jiyugaoka Station Tokyo 2026.jpg",
+    "alt": "自由が丘駅前と街並み",
+    "caption": "駅前に商業と人の流れが集まる。休日の混雑と、住宅側へ抜けた後の静けさを分けて見たい。"
+  },
+  {
+    "key": "kawasaki-east",
+    "station": "kawasaki",
+    "title": "File:JRE Kawasaki-STA East Exit Plaza.jpg",
+    "alt": "川崎駅東口広場",
+    "caption": "東口は地下街、商業、バス、繁華街への動線が重なる。西口とは生活の組み立て方が大きく異なる。"
+  },
+  {
+    "key": "musashikosugi-station",
+    "station": "musashikosugi",
+    "title": "File:Musashi-kosugi station.jpg",
+    "alt": "武蔵小杉駅と高層住宅",
+    "caption": "複数の駅施設と高層住宅が広い範囲に分かれる。路線間の徒歩距離まで含めて駅を考えたい。"
+  },
+  {
+    "key": "yokohama-east",
+    "station": "yokohama",
+    "title": "File:Yokohama Station East exit Taxi plaza.jpg",
+    "alt": "横浜駅東口のタクシー乗り場",
+    "caption": "巨大駅では出口選びそのものが生活条件になる。東西の移動と、駅構内を抜ける時間を別に見たい。"
+  }
+]

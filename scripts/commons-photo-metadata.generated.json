@@ -1,0 +1,123 @@
+{
+  "osaki-station": {
+    "file": "images/osaki-station.webp",
+    "alt": "大崎駅の駅舎と駅前",
+    "caption": "駅前は歩行者デッキと大規模な建物が連続する。地上へ下りた後の住宅地とのつながりを確認したい。",
+    "date": "13 May 2024, 10:57:52",
+    "author": "Smiley.toerist",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Osaki_station_2024_2.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "gotanda-view": {
+    "file": "images/gotanda-view.webp",
+    "alt": "五反田駅から大崎方向を見た線路と街並み",
+    "caption": "線路、川、幹線道路、坂が近接する五反田。駅からどちらへ抜けるかで帰宅経路が大きく変わる。",
+    "date": "18 October 2024, 10:45",
+    "author": "Syced",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:From_Gotanda_station,_looking_towards_Osaki.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "musashikoyama-palm": {
+    "file": "images/musashikoyama-palm.webp",
+    "alt": "武蔵小山のパルム商店街",
+    "caption": "駅から長く続く商店街は、雨の日の買い物にも使いやすい。撮影時期が古いため店舗の現況は別途確認したい。",
+    "date": "2011-11-20",
+    "author": "Aimaimyi",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Musashi-koyama_Palm_-01.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "togoshiginza-station": {
+    "file": "images/togoshiginza-station.webp",
+    "alt": "戸越銀座駅の五反田方面改札",
+    "caption": "ホームと改札が商店街の生活動線に直接つながる。駅前だけでなく商店街のどの区間に住むかが重要になる。",
+    "date": "2019-04-30 17:49:44",
+    "author": "Kaze315",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Togoshi-Ginza_Station(GotandaGates).jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "nakanobu-skiproad": {
+    "file": "images/nakanobu-skiproad.webp",
+    "alt": "中延の商店街スキップロード",
+    "caption": "二つの鉄道路線の間に日常の商店街が続く。古い写真のため、街路の骨格を見る資料として扱う。",
+    "date": "2009-01",
+    "author": "User:Kentin",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nakanobu_skip_road_shinagawa.JPG",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "hatanodai-platform": {
+    "file": "images/hatanodai-platform.webp",
+    "alt": "旗の台駅のホーム",
+    "caption": "大井町線と池上線が交わる駅。乗換の便利さに対し、駅の外は小さな通りと住宅地へすぐ切り替わる。",
+    "date": "2022-03-24 11:07:02",
+    "author": "MaedaAkihiko",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hatanodai-STA_Home3-4.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "ookayama-station": {
+    "file": "images/ookayama-station.webp",
+    "alt": "大岡山駅前",
+    "caption": "病院と大学が駅前にあり、その外側に住宅地が広がる。撮影時期が古いため建物の現況は確認が必要。",
+    "date": "2012-02-02",
+    "author": "豊田出庫線",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ookayama_eki.png",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "jiyugaoka-station": {
+    "file": "images/jiyugaoka-station.webp",
+    "alt": "自由が丘駅前と街並み",
+    "caption": "駅前に商業と人の流れが集まる。休日の混雑と、住宅側へ抜けた後の静けさを分けて見たい。",
+    "date": "2026-04-24 17:17:36",
+    "author": "ノーマルエディタ",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jiyugaoka_Station_Tokyo_2026.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "kawasaki-east": {
+    "file": "images/kawasaki-east.webp",
+    "alt": "川崎駅東口広場",
+    "caption": "東口は地下街、商業、バス、繁華街への動線が重なる。西口とは生活の組み立て方が大きく異なる。",
+    "date": "2024-12-30",
+    "author": "Euph0956",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:JRE_Kawasaki-STA_East_Exit_Plaza.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "musashikosugi-station": {
+    "file": "images/musashikosugi-station.webp",
+    "alt": "武蔵小杉駅と高層住宅",
+    "caption": "複数の駅施設と高層住宅が広い範囲に分かれる。路線間の徒歩距離まで含めて駅を考えたい。",
+    "date": "2020-11-28 11:13:43",
+    "author": "Drivephotographer",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Musashi-kosugi_station.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  },
+  "yokohama-east": {
+    "file": "images/yokohama-east.webp",
+    "alt": "横浜駅東口のタクシー乗り場",
+    "caption": "巨大駅では出口選びそのものが生活条件になる。東西の移動と、駅構内を抜ける時間を別に見たい。",
+    "date": "27 September 2019, 17:05:17",
+    "author": "Yoh-Plus",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yokohama_Station_East_exit_Taxi_plaza.jpg",
+    "changes": "縮小・WebP変換・表示時にトリミング"
+  }
+}

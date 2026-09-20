@@ -1,11 +1,12 @@
+import * as maplibregl from "/vendor/maplibre-gl.mjs";
+import { ATLAS_DATA } from "/assets/data.js";
+
 (() => {
   "use strict";
 
-  const data = window.ATLAS_DATA;
-  if (!data) return;
-
-  const { stations, sources, tagLabels } = data;
+  const { stations, sources, tagLabels, filterGroups, themePresets } = ATLAS_DATA;
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
+  const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const compareKey = "ekimachi-compare-v1";
 
   const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
@@ -13,6 +14,7 @@
   })[character]);
 
   const stationUrl = (station) => `/station/${encodeURIComponent(station.slug)}/`;
+  const themeUrl = (theme) => `/themes/${encodeURIComponent(theme.id)}/`;
   const imageUrl = (photo) => `/${String(photo.file).replace(/^\/+/, "")}`;
 
   function readCompare() {
@@ -49,7 +51,7 @@
   function makeMarker(station) {
     const marker = document.createElement("button");
     marker.type = "button";
-    marker.className = `atlas-marker ${station.status === "feature" ? "feature" : ""}`;
+    marker.className = "atlas-marker";
     marker.setAttribute("aria-label", `${station.name}駅の概要を表示`);
     marker.dataset.slug = station.slug;
     return marker;
@@ -57,7 +59,7 @@
 
   function popupHtml(station) {
     return `<div class="map-popup">
-      <small>${station.status === "feature" ? "写真・本文収録" : "街の概要収録"}</small>
+      <small>街ガイド・写真${station.images?.length || 0}点</small>
       <h3>${escapeHtml(station.name)}</h3>
       <p>${escapeHtml(station.descriptor)}</p>
       <a href="${stationUrl(station)}">駅の図譜を読む →</a>
@@ -66,12 +68,12 @@
 
   function createMap(containerId, options = {}) {
     const fallback = document.querySelector(options.fallbackSelector || "#map-fallback");
-    if (!window.maplibregl) {
+    if (!maplibregl) {
       if (fallback) fallback.classList.add("is-visible");
       return null;
     }
     try {
-      const map = new window.maplibregl.Map({
+      const map = new maplibregl.Map({
         container: containerId,
         style: "https://tiles.openfreemap.org/styles/liberty",
         center: options.center || [139.7, 35.575],
@@ -79,7 +81,18 @@
         cooperativeGestures: true,
         attributionControl: true
       });
-      map.addControl(new window.maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      const loadingTimer = window.setTimeout(() => {
+        if (!map.loaded() && fallback) fallback.classList.add("is-visible");
+      }, 9000);
+      map.once("load", () => {
+        window.clearTimeout(loadingTimer);
+        if (fallback) fallback.classList.remove("is-visible");
+      });
+      map.once("error", () => {
+        window.clearTimeout(loadingTimer);
+        if (fallback) fallback.classList.add("is-visible");
+      });
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
       return map;
     } catch (_error) {
       if (fallback) fallback.classList.add("is-visible");
@@ -93,32 +106,79 @@
     const stationList = document.querySelector("#station-list");
     const resultCount = document.querySelector("#result-count");
     const featuredGrid = document.querySelector("#featured-grid");
-    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid) return;
+    const matchMode = document.querySelector("#match-mode");
+    const clearFilters = document.querySelector("#clear-filters");
+    const themeContext = document.querySelector("#theme-context");
+    const featuredTitle = document.querySelector("#featured-title");
+    const themePathMatch = location.pathname.match(/\/themes\/([^/]+)/);
+    const themeId = document.body.dataset.themeId || (themePathMatch && decodeURIComponent(themePathMatch[1])) || new URLSearchParams(location.search).get("theme");
+    const activeTheme = themeById.get(themeId) || null;
+    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext) return;
 
     const activeTags = new Set();
     const markerEntries = [];
+    const chipByTag = new Map();
+    let themeDirty = false;
 
-    Object.entries(tagLabels).forEach(([key, label]) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "filter-chip";
-      button.textContent = label;
-      button.dataset.tag = key;
-      button.setAttribute("aria-pressed", "false");
-      filterList.append(button);
-      button.addEventListener("click", () => {
-        if (activeTags.has(key)) activeTags.delete(key); else activeTags.add(key);
-        button.setAttribute("aria-pressed", String(activeTags.has(key)));
-        applyFilters();
+    function themeScore(station, tags = activeTheme?.tags || []) {
+      return tags.reduce((score, tag) => score + Number(station.tags.includes(tag)), 0);
+    }
+
+    function updateThemeContext() {
+      document.querySelectorAll("[data-theme-link]").forEach((link) => {
+        const selected = activeTheme ? link.dataset.themeLink === activeTheme.id : link.dataset.themeLink === "all";
+        link.classList.toggle("is-current", selected);
+        if (selected) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
       });
+      if (!activeTheme) {
+        themeContext.hidden = true;
+        return;
+      }
+      themeContext.hidden = false;
+      themeContext.innerHTML = `<small>現在の視点${themeDirty ? "・条件を調整中" : ""}</small><strong>${escapeHtml(activeTheme.title)}</strong><p>${escapeHtml(activeTheme.description)}</p><div>${activeTheme.criteria.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}<a href="/#atlas">すべてから探す</a></div>`;
+    }
+
+    filterGroups.forEach((group) => {
+      const section = document.createElement("section");
+      section.className = "filter-group";
+      section.innerHTML = `<div class="filter-group-head"><h4>${escapeHtml(group.label)}</h4><p>${escapeHtml(group.note)}</p></div><div class="filter-group-options"></div>`;
+      const options = section.querySelector(".filter-group-options");
+      group.tags.forEach((key) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "filter-chip";
+        button.textContent = tagLabels[key];
+        button.dataset.tag = key;
+        button.setAttribute("aria-pressed", "false");
+        options.append(button);
+        chipByTag.set(key, button);
+        button.addEventListener("click", () => {
+          if (activeTags.has(key)) activeTags.delete(key); else activeTags.add(key);
+          button.setAttribute("aria-pressed", String(activeTags.has(key)));
+          themeDirty = Boolean(activeTheme);
+          updateThemeContext();
+          applyFilters();
+        });
+      });
+      filterList.append(section);
     });
+
+    if (activeTheme) {
+      matchMode.value = activeTheme.matchMode;
+      activeTheme.tags.forEach((tag) => {
+        activeTags.add(tag);
+        chipByTag.get(tag)?.setAttribute("aria-pressed", "true");
+      });
+    }
+    updateThemeContext();
 
     const map = createMap("map");
     if (map) {
       stations.forEach((station) => {
         const element = makeMarker(station);
-        const popup = new window.maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(popupHtml(station));
-        const marker = new window.maplibregl.Marker({ element }).setLngLat([station.lng, station.lat]).setPopup(popup).addTo(map);
+        const popup = new maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(popupHtml(station));
+        const marker = new maplibregl.Marker({ element }).setLngLat([station.lng, station.lat]).setPopup(popup).addTo(map);
+        if (activeTheme && themeScore(station) >= 2) element.classList.add("theme-strong");
         markerEntries.push({ station, element, marker });
       });
     }
@@ -127,18 +187,25 @@
       return `<a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
         <span class="row-code">${String(index + 1).padStart(2, "0")}</span>
         <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p></span>
-        <span class="row-status ${station.status}">${station.status === "feature" ? "詳細版" : "基礎版"}</span>
+        <span class="row-status">${station.images?.length ? `写真${station.images.length}点` : "街ガイド"}</span>
       </a>`;
     }
 
     function currentMatches() {
       const query = searchInput.value.trim().toLocaleLowerCase("ja");
-      return stations.filter((station) => {
+      const selectedTags = [...activeTags];
+      const matches = stations.filter((station) => {
         const text = [station.name, station.kana, station.area, ...station.lines].join(" ").toLocaleLowerCase("ja");
         const textMatches = !query || text.includes(query);
-        const tagsMatch = [...activeTags].every((tag) => station.tags.includes(tag));
+        const tagsMatch = selectedTags.length === 0 || (matchMode.value === "any"
+          ? selectedTags.some((tag) => station.tags.includes(tag))
+          : selectedTags.every((tag) => station.tags.includes(tag)));
         return textMatches && tagsMatch;
       });
+      if (selectedTags.length && matchMode.value === "any") {
+        matches.sort((a, b) => themeScore(b, selectedTags) - themeScore(a, selectedTags));
+      }
+      return matches;
     }
 
     function applyFilters() {
@@ -152,13 +219,29 @@
     }
 
     searchInput.addEventListener("input", applyFilters);
+    matchMode.addEventListener("change", () => {
+      themeDirty = Boolean(activeTheme);
+      updateThemeContext();
+      applyFilters();
+    });
+    clearFilters.addEventListener("click", () => {
+      activeTags.clear();
+      chipByTag.forEach((button) => button.setAttribute("aria-pressed", "false"));
+      themeDirty = Boolean(activeTheme);
+      updateThemeContext();
+      applyFilters();
+    });
     applyFilters();
 
-    featuredGrid.innerHTML = stations.filter((station) => station.status === "feature").map((station) => {
+    const featuredStations = activeTheme
+      ? [...stations].sort((a, b) => themeScore(b) - themeScore(a)).slice(0, 6)
+      : stations.slice(0, 6);
+    if (activeTheme && featuredTitle) featuredTitle.textContent = `${activeTheme.navLabel}の視点で開く駅。`;
+    featuredGrid.innerHTML = featuredStations.map((station) => {
       const photo = sources[station.images[0]];
       return `<a class="feature-link" href="${stationUrl(station)}">
         <div class="feature-image"><img src="${escapeHtml(imageUrl(photo))}" alt="${escapeHtml(photo.alt)}" loading="lazy" width="1200" height="900"></div>
-        <div class="feature-copy"><small>${escapeHtml(station.area)} · 詳細版</small><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.descriptor)}</p></div>
+        <div class="feature-copy"><small>${escapeHtml(station.area)} · 写真${station.images.length}点</small><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.descriptor)}</p></div>
       </a>`;
     }).join("");
   }
@@ -216,7 +299,7 @@
     if (!root) return;
     const params = new URLSearchParams(location.search);
     const pathMatch = location.pathname.match(/\/station\/([^/]+)/);
-    const slug = params.get("slug") || (pathMatch && decodeURIComponent(pathMatch[1])) || "oimachi";
+    const slug = document.body.dataset.stationSlug || params.get("slug") || (pathMatch && decodeURIComponent(pathMatch[1])) || "oimachi";
     const station = stationBySlug.get(slug);
 
     if (!station) {
@@ -228,6 +311,14 @@
     const editorial = defaultsFor(station);
     const related = relatedStations(station);
     const photos = station.images || [];
+    const leadPhoto = sources[photos[0]];
+    const practical = station.practical || {};
+    const stationThemes = themePresets
+      .map((theme) => ({ theme, score: theme.tags.filter((tag) => station.tags.includes(tag)).length }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map(({ theme }) => theme);
     document.title = `${station.name}｜駅まち図譜`;
     const description = document.querySelector('meta[name="description"]') || document.head.appendChild(document.createElement("meta"));
     description.name = "description";
@@ -240,27 +331,42 @@
           <div class="station-meta">${station.lines.map((line) => `<span class="line-label">${escapeHtml(line)}</span>`).join("")}</div>
           <h1>${escapeHtml(station.name)}</h1><p class="station-kana">${escapeHtml(station.kana)} · ${escapeHtml(station.area)}</p>
           <p class="station-descriptor">${escapeHtml(station.descriptor)}</p><p class="station-summary">${escapeHtml(station.summary)}</p>
-          <div class="hero-actions"><button class="button" type="button" data-compare-toggle="${station.slug}">比較に追加</button><a class="button secondary" href="/compare">比較表を見る</a></div>
+          <div class="hero-actions"><button class="button" type="button" data-compare-toggle="${station.slug}">比較に追加</button><a class="button secondary" href="/compare/">比較表を見る</a></div>
         </div>
-        <div class="station-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><span class="station-map-note">中心は駅。住居候補は道と出口まで確認を。</span></div>
+        <figure class="station-lead-photo">
+          <img src="${escapeHtml(imageUrl(leadPhoto))}" alt="${escapeHtml(leadPhoto.alt)}" width="1200" height="900">
+          <figcaption><span>街の入口</span><p>${escapeHtml(leadPhoto.caption)}</p><small>${escapeHtml(leadPhoto.date)} · ${escapeHtml(leadPhoto.author)} · ${escapeHtml(leadPhoto.license)}</small></figcaption>
+        </figure>
       </section>
+      <section class="station-facts" aria-label="暮らしの要点">
+        <div><small>生活費</small><p>${escapeHtml(practical.cost)}</p></div>
+        <div><small>車と道路</small><p>${escapeHtml(practical.car)}</p></div>
+        <div><small>散歩・自転車</small><p>${escapeHtml(practical.outdoors)}</p></div>
+      </section>
+      <nav class="station-lenses" aria-label="別の暮らしの視点で探す"><span>この駅を入口に、別の視点へ</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/#lenses">すべての視点</a></nav>
       <div class="station-body">
-        <aside class="station-index"><h2>この駅の読み方</h2><ol><li><a href="#viewpoint">強みと注意点</a></li><li><a href="#walk">駅から歩く</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">生活の組み立て</a></li><li><a href="#related">近い候補</a></li></ol></aside>
+        <aside class="station-index"><h2>この駅の読み方</h2><ol><li><a href="#viewpoint">強みと注意点</a></li><li><a href="#walk">駅から歩く</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">生活の組み立て</a></li><li><a href="#related">近い候補</a></li></ol></aside>
         <article class="station-content">
           <section class="content-section" id="viewpoint"><p class="section-kicker">Viewpoints, not scores</p><h2>向いている生活と、確かめたいこと。</h2>
             <div class="split-notes"><div class="split-note"><h3>この駅の強み</h3><ul>${editorial.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div><div class="split-note"><h3>住む前の確認点</h3><ul>${editorial.cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div></div>
           </section>
           <section class="content-section" id="walk"><p class="section-kicker">Walk from the station</p><h2>駅前から住宅地まで。</h2><div class="walk-bands">${editorial.walk.map((row) => `<div class="walk-band"><b>${escapeHtml(row[0])}</b><strong>${escapeHtml(row[1])}</strong><p>${escapeHtml(row[2])}</p></div>`).join("")}</div></section>
+          <section class="content-section" id="station-map-section"><p class="section-kicker">Read the ground</p><h2>写真の位置を、地図で読む。</h2><div class="content-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><div class="map-fallback" id="station-map-fallback">地図を読み込めませんでした。写真と徒歩圏の記述はそのまま利用できます。</div><span class="station-map-note">中心は駅。実際の住居候補は出口・線路・幹線道路まで確認を。</span></div></section>
           <section class="content-section" id="photos"><p class="section-kicker">Street evidence</p><h2>公開写真で見る、街の断面。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と編集本文でページは利用できます。</div>'}</section>
-          <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>生活を四つの場面で読む。</h2><div class="life-grid">
-            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
+          <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>生活を七つの場面で読む。</h2><div class="life-grid">
+            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "生活費", practical.cost], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
           </div></section>
           <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
         </article>
       </div>`;
 
-    const map = createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#none" });
-    if (map) new window.maplibregl.Marker({ element: makeMarker({ ...station, status: "feature" }) }).setLngLat([station.lng, station.lat]).addTo(map);
+    const map = createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#station-map-fallback" });
+    if (map) {
+      const markerElement = makeMarker(station);
+      markerElement.classList.add("feature");
+      markerElement.setAttribute("aria-label", `${station.name}駅`);
+      new maplibregl.Marker({ element: markerElement }).setLngLat([station.lng, station.lat]).addTo(map);
+    }
 
     const toggle = root.querySelector("[data-compare-toggle]");
     const refreshToggle = () => {
@@ -310,6 +416,10 @@
         ["強み", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
         ["確認点", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
         ["徒歩圏の変化", (station) => `<p>${defaultsFor(station).walk.map((row) => `${escapeHtml(row[0])} ${escapeHtml(row[1])}`).join(" → ")}</p>`],
+        ["住居費の見方", (station) => `<p>${escapeHtml(station.practical.cost)}</p>`],
+        ["車・高速道路", (station) => `<p>${escapeHtml(station.practical.car)}</p>`],
+        ["散歩・自転車", (station) => `<p>${escapeHtml(station.practical.outdoors)}</p>`],
+        ["夜の帰宅", (station) => `<p>${escapeHtml(station.practical.evening)}</p>`],
         ["生活条件", (station) => `<p>${station.tags.map((tag) => escapeHtml(tagLabels[tag] || tag)).join("・")}</p>`]
       ];
       output.innerHTML = `<table class="compare-table"><thead><tr><th>比較軸</th>${selected.map((station) => `<th><a class="compare-name" href="${stationUrl(station)}">${escapeHtml(station.name)}</a><span class="compare-descriptor">${escapeHtml(station.descriptor)}</span></th>`).join("")}</tr></thead><tbody>${rows.map(([label, renderCell]) => `<tr><th>${label}</th>${selected.map((station) => `<td>${renderCell(station)}</td>`).join("")}</tr>`).join("")}</tbody></table><div class="compare-actions">${selected.map((station) => `<a class="button secondary" href="${stationUrl(station)}">${escapeHtml(station.name)}の詳細</a>`).join("")}</div>`;

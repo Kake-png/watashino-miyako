@@ -23,3 +23,5 @@ Thumbs.db
 qa-*
 *.zip
 
+# Local photo research cache (published WebP files live in public/images)
+assets/

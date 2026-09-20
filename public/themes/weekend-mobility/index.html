@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="物件ではなく、駅と街の特色から住む場所を探す南東京の生活圏アトラス。">
+  <meta name="description" content="通勤だけでなく、羽田・新幹線・高速道路や川沿いへの動き方まで重ねて、休日の起点になる街を探します。">
   <meta name="theme-color" content="#183f39">
-  <title>駅まち図譜（仮）｜街の特色から住む駅を探す</title>
+  <title>週末に都市を出る人の街探し｜駅まち図譜（仮）</title>
   <link rel="preconnect" href="https://tiles.openfreemap.org">
   <link rel="stylesheet" href="/vendor/maplibre-gl.css">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/style.css">
   <script type="module" src="/assets/app.js"></script>
 </head>
-<body data-page="home">
+<body data-page="home" data-theme-id="weekend-mobility">
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
     <a class="brand" href="/" aria-label="駅まち図譜 トップページ">
@@ -33,9 +33,9 @@
     <section class="intro intro-cover">
       <div class="intro-main">
         <p class="edition-label">南東京15駅・試作版 <span>ISSUE 01</span></p>
-        <p class="kicker">Choose a town before a room</p>
-        <h1>駅から、<br><em>暮らしを選ぶ。</em></h1>
-        <p class="intro-lead">家賃と通勤時間だけで物件を絞る前に、その駅でどんな一日を送るのかを見るサイトです。買い物、帰宅路、車、自転車、散歩、夜の街まで、南東京の15駅を同じ視点で読み比べます。</p>
+        <p class="kicker">A lifestyle lens for the city</p>
+        <h1>週末に都市を出る人の街探し</h1>
+        <p class="intro-lead">通勤だけでなく、羽田・新幹線・高速道路や川沿いへの動き方まで重ねて、休日の起点になる街を探します。条件は入口です。地図を開いたあとで、別の条件を足したり、すべて外したりできます。</p>
         <div class="intro-actions"><a class="button" href="#atlas">地図を開く</a><a class="text-link" href="/compare/">3駅を比べる →</a></div>
       </div>
       <div class="cover-photos" aria-label="南東京の街の写真">
@@ -63,7 +63,7 @@
       </div>
     </section>
 
-    <div id="theme-story-slot"></div>
+    <div id="theme-story-slot"><section class="theme-story" aria-labelledby="theme-story-title"><div><p class="section-kicker">A selected point of view</p><h2 id="theme-story-title">週末に都市を出る人の街探し</h2><p>通勤だけでなく、羽田・新幹線・高速道路や川沿いへの動き方まで重ねて、休日の起点になる街を探します。</p></div><ol><li>平日の都心アクセス</li><li>羽田・新幹線・高速道路へのつながり</li><li>川・海・自転車など休日の外出</li></ol><a href="/#atlas">視点を外して、すべてから探す →</a></section></div>
 
     <section class="atlas-layout" id="atlas" aria-labelledby="atlas-title">
       <div class="atlas-panel">

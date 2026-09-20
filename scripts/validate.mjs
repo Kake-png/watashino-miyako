@@ -1,15 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { ATLAS_DATA } from "../public/assets/data.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(projectRoot, "public");
-const dataCode = fs.readFileSync(path.join(publicRoot, "assets", "data.js"), "utf8");
-const context = { window: {} };
-vm.runInNewContext(dataCode, context, { filename: "data.js" });
-
-const { stations, sources, tagLabels } = context.window.ATLAS_DATA;
+const { stations, sources, tagLabels, filterGroups, themePresets } = ATLAS_DATA;
 const errors = [];
 const slugs = new Set();
 
@@ -25,6 +21,8 @@ for (const station of stations) {
   for (const sourceKey of station.images || []) {
     if (!sources[sourceKey]) errors.push(`${station.slug}: unknown image source ${sourceKey}`);
   }
+  if (!station.practical) errors.push(`${station.slug}: missing practical notes`);
+  if (!fs.existsSync(path.join(publicRoot, "station", station.slug, "index.html"))) errors.push(`${station.slug}: missing physical station page`);
 }
 
 for (const [key, source] of Object.entries(sources)) {
@@ -36,13 +34,32 @@ for (const [key, source] of Object.entries(sources)) {
   if (!source.licenseUrl.startsWith("https://creativecommons.org/")) errors.push(`${key}: unexpected license host`);
 }
 
-for (const file of ["index.html", "station.html", "compare.html", "credits.html", "_redirects", "_headers"]) {
+for (const group of filterGroups) {
+  for (const tag of group.tags) if (!tagLabels[tag]) errors.push(`${group.id}: unknown filter tag ${tag}`);
+}
+
+const themeIds = new Set();
+for (const theme of themePresets) {
+  if (themeIds.has(theme.id)) errors.push(`Duplicate theme id: ${theme.id}`);
+  themeIds.add(theme.id);
+  for (const field of ["id", "navLabel", "label", "title", "description", "matchMode"]) {
+    if (!theme[field]) errors.push(`${theme.id || "unknown theme"}: missing ${field}`);
+  }
+  for (const tag of theme.tags || []) if (!tagLabels[tag]) errors.push(`${theme.id}: unknown theme tag ${tag}`);
+  if (!fs.existsSync(path.join(publicRoot, "themes", theme.id, "index.html"))) errors.push(`${theme.id}: missing physical theme page`);
+}
+
+for (const file of ["index.html", "compare/index.html", "about/index.html", "_headers", "vendor/maplibre-gl.mjs", "vendor/maplibre-gl.css"]) {
   if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing publish asset: ${file}`);
 }
+
+const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
+if (indexHtml.includes("unpkg.com/maplibre")) errors.push("Home still references external MapLibre bundle");
+if (!indexHtml.includes('type="module" src="/assets/app.js"')) errors.push("Home is missing module app script");
 
 if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);
 }
 
-console.log(`OK: ${stations.length} stations, ${Object.keys(sources).length} licensed photos, ${Object.keys(tagLabels).length} filters.`);
+console.log(`OK: ${stations.length} stations, ${themePresets.length} lifestyle themes, ${Object.keys(sources).length} licensed photos, ${Object.keys(tagLabels).length} filters.`);
