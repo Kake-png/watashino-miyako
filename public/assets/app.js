@@ -1,0 +1,336 @@
+(() => {
+  "use strict";
+
+  const data = window.ATLAS_DATA;
+  if (!data) return;
+
+  const { stations, sources, tagLabels } = data;
+  const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
+  const compareKey = "ekimachi-compare-v1";
+
+  const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+  })[character]);
+
+  const stationUrl = (station) => `/station/${encodeURIComponent(station.slug)}/`;
+  const imageUrl = (photo) => `/${String(photo.file).replace(/^\/+/, "")}`;
+
+  function readCompare() {
+    try {
+      const value = JSON.parse(localStorage.getItem(compareKey) || "[]");
+      return Array.isArray(value) ? value.filter((slug) => stationBySlug.has(slug)).slice(0, 3) : [];
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  function writeCompare(slugs) {
+    const clean = [...new Set(slugs)].filter((slug) => stationBySlug.has(slug)).slice(0, 3);
+    try { localStorage.setItem(compareKey, JSON.stringify(clean)); } catch (_error) { /* Storage can be disabled. */ }
+    updateCompareCounts(clean.length);
+    return clean;
+  }
+
+  function updateCompareCounts(count = readCompare().length) {
+    document.querySelectorAll("[data-compare-count]").forEach((node) => { node.textContent = String(count); });
+  }
+
+  function setupNavigation() {
+    const button = document.querySelector(".nav-toggle");
+    const nav = document.querySelector("#site-nav");
+    if (!button || !nav) return;
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!open));
+      nav.classList.toggle("is-open", !open);
+    });
+  }
+
+  function makeMarker(station) {
+    const marker = document.createElement("button");
+    marker.type = "button";
+    marker.className = `atlas-marker ${station.status === "feature" ? "feature" : ""}`;
+    marker.setAttribute("aria-label", `${station.name}駅の概要を表示`);
+    marker.dataset.slug = station.slug;
+    return marker;
+  }
+
+  function popupHtml(station) {
+    return `<div class="map-popup">
+      <small>${station.status === "feature" ? "写真・本文収録" : "街の概要収録"}</small>
+      <h3>${escapeHtml(station.name)}</h3>
+      <p>${escapeHtml(station.descriptor)}</p>
+      <a href="${stationUrl(station)}">駅の図譜を読む →</a>
+    </div>`;
+  }
+
+  function createMap(containerId, options = {}) {
+    const fallback = document.querySelector(options.fallbackSelector || "#map-fallback");
+    if (!window.maplibregl) {
+      if (fallback) fallback.classList.add("is-visible");
+      return null;
+    }
+    try {
+      const map = new window.maplibregl.Map({
+        container: containerId,
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: options.center || [139.7, 35.575],
+        zoom: options.zoom || 10.7,
+        cooperativeGestures: true,
+        attributionControl: true
+      });
+      map.addControl(new window.maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      return map;
+    } catch (_error) {
+      if (fallback) fallback.classList.add("is-visible");
+      return null;
+    }
+  }
+
+  function renderHome() {
+    const filterList = document.querySelector("#filter-list");
+    const searchInput = document.querySelector("#station-search");
+    const stationList = document.querySelector("#station-list");
+    const resultCount = document.querySelector("#result-count");
+    const featuredGrid = document.querySelector("#featured-grid");
+    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid) return;
+
+    const activeTags = new Set();
+    const markerEntries = [];
+
+    Object.entries(tagLabels).forEach(([key, label]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "filter-chip";
+      button.textContent = label;
+      button.dataset.tag = key;
+      button.setAttribute("aria-pressed", "false");
+      filterList.append(button);
+      button.addEventListener("click", () => {
+        if (activeTags.has(key)) activeTags.delete(key); else activeTags.add(key);
+        button.setAttribute("aria-pressed", String(activeTags.has(key)));
+        applyFilters();
+      });
+    });
+
+    const map = createMap("map");
+    if (map) {
+      stations.forEach((station) => {
+        const element = makeMarker(station);
+        const popup = new window.maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(popupHtml(station));
+        const marker = new window.maplibregl.Marker({ element }).setLngLat([station.lng, station.lat]).setPopup(popup).addTo(map);
+        markerEntries.push({ station, element, marker });
+      });
+    }
+
+    function rowHtml(station, index) {
+      return `<a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
+        <span class="row-code">${String(index + 1).padStart(2, "0")}</span>
+        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p></span>
+        <span class="row-status ${station.status}">${station.status === "feature" ? "詳細版" : "基礎版"}</span>
+      </a>`;
+    }
+
+    function currentMatches() {
+      const query = searchInput.value.trim().toLocaleLowerCase("ja");
+      return stations.filter((station) => {
+        const text = [station.name, station.kana, station.area, ...station.lines].join(" ").toLocaleLowerCase("ja");
+        const textMatches = !query || text.includes(query);
+        const tagsMatch = [...activeTags].every((tag) => station.tags.includes(tag));
+        return textMatches && tagsMatch;
+      });
+    }
+
+    function applyFilters() {
+      const matches = currentMatches();
+      const visible = new Set(matches.map((station) => station.slug));
+      resultCount.textContent = `${matches.length}駅を表示`;
+      stationList.innerHTML = matches.length
+        ? matches.map(rowHtml).join("")
+        : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
+      markerEntries.forEach(({ station, element }) => element.classList.toggle("is-muted", !visible.has(station.slug)));
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    applyFilters();
+
+    featuredGrid.innerHTML = stations.filter((station) => station.status === "feature").map((station) => {
+      const photo = sources[station.images[0]];
+      return `<a class="feature-link" href="${stationUrl(station)}">
+        <div class="feature-image"><img src="${escapeHtml(imageUrl(photo))}" alt="${escapeHtml(photo.alt)}" loading="lazy" width="1200" height="900"></div>
+        <div class="feature-copy"><small>${escapeHtml(station.area)} · 詳細版</small><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.descriptor)}</p></div>
+      </a>`;
+    }).join("");
+  }
+
+  function defaultsFor(station) {
+    return {
+      strengths: station.strengths || [
+        `${station.lines.length}路線を軸に移動を組み立てられる`,
+        tagLabels[station.tags[0]] ? `${tagLabels[station.tags[0]]}という見方ができる` : "駅前と住宅側の違いを比べられる"
+      ],
+      cautions: station.cautions || [
+        "基礎版のため、住む方向と時間帯は現地で確認したい",
+        "店舗・工事・運行情報は公式情報で再確認が必要"
+      ],
+      walk: station.walk || [
+        ["0–3分", "駅前", "改札から出口ごとの店・道路・人の流れを確認する。"],
+        ["3–7分", "生活の通り", "日常の買い物と、幹線道路・線路を越える経路を見る。"],
+        ["7–12分", "住宅地", "道幅、坂、夜の明るさ、駅までの戻りやすさを確かめる。"]
+      ],
+      notes: station.notes || {
+        transport: `${station.lines.join("、")}を利用できる。路線名だけでなく、改札・ホームまでの移動も現地で確認したい。`,
+        daily: `「${station.descriptor}」という街の骨格を、普段使う店と帰宅経路から確かめる。`,
+        atmosphere: station.summary,
+        weekend: "平日夜と休日昼に歩き、店の開き方や人通りの違いを見ると生活を想像しやすい。"
+      }
+    };
+  }
+
+  function distance(a, b) {
+    const x = (a.lng - b.lng) * Math.cos(((a.lat + b.lat) / 2) * Math.PI / 180);
+    const y = a.lat - b.lat;
+    return Math.sqrt(x * x + y * y);
+  }
+
+  function relatedStations(station) {
+    return stations.filter((candidate) => candidate.slug !== station.slug)
+      .map((candidate) => ({ candidate, tagScore: candidate.tags.filter((tag) => station.tags.includes(tag)).length, distance: distance(station, candidate) }))
+      .sort((a, b) => (b.tagScore - a.tagScore) || (a.distance - b.distance))
+      .slice(0, 3)
+      .map(({ candidate }) => candidate);
+  }
+
+  function renderPhoto(sourceKey, index) {
+    const photo = sources[sourceKey];
+    if (!photo) return "";
+    return `<figure class="photo-item">
+      <div class="photo-frame"><img src="${escapeHtml(imageUrl(photo))}" alt="${escapeHtml(photo.alt)}" loading="lazy" width="1200" height="900"></div>
+      <figcaption><p><b>${String(index + 1).padStart(2, "0")}.</b> ${escapeHtml(photo.caption)}</p>
+      <div class="photo-credit">${escapeHtml(photo.date)}撮影 · <a href="${escapeHtml(photo.sourceUrl)}" rel="external noopener">${escapeHtml(photo.author)}</a> · <a href="${escapeHtml(photo.licenseUrl)}" rel="license external noopener">${escapeHtml(photo.license)}</a> · ${escapeHtml(photo.changes)}</div></figcaption>
+    </figure>`;
+  }
+
+  function renderStation() {
+    const root = document.querySelector("#station-page");
+    if (!root) return;
+    const params = new URLSearchParams(location.search);
+    const pathMatch = location.pathname.match(/\/station\/([^/]+)/);
+    const slug = params.get("slug") || (pathMatch && decodeURIComponent(pathMatch[1])) || "oimachi";
+    const station = stationBySlug.get(slug);
+
+    if (!station) {
+      document.title = "駅が見つかりません｜駅まち図譜";
+      root.innerHTML = `<div class="not-found"><p class="kicker">Not found</p><h1>駅が見つかりません。</h1><p><a class="button" href="/#atlas">地図から探す</a></p></div>`;
+      return;
+    }
+
+    const editorial = defaultsFor(station);
+    const related = relatedStations(station);
+    const photos = station.images || [];
+    document.title = `${station.name}｜駅まち図譜`;
+    const description = document.querySelector('meta[name="description"]') || document.head.appendChild(document.createElement("meta"));
+    description.name = "description";
+    description.content = `${station.name}駅の交通、買い物、街の変化を、駅前から徒歩圏の順に読む生活圏ガイド。`;
+
+    root.innerHTML = `
+      <nav class="breadcrumb" aria-label="パンくず"><a href="/">南東京</a> / <span>${escapeHtml(station.area)}</span> / <strong>${escapeHtml(station.name)}</strong></nav>
+      <section class="station-hero">
+        <div class="station-hero-copy">
+          <div class="station-meta">${station.lines.map((line) => `<span class="line-label">${escapeHtml(line)}</span>`).join("")}</div>
+          <h1>${escapeHtml(station.name)}</h1><p class="station-kana">${escapeHtml(station.kana)} · ${escapeHtml(station.area)}</p>
+          <p class="station-descriptor">${escapeHtml(station.descriptor)}</p><p class="station-summary">${escapeHtml(station.summary)}</p>
+          <div class="hero-actions"><button class="button" type="button" data-compare-toggle="${station.slug}">比較に追加</button><a class="button secondary" href="/compare">比較表を見る</a></div>
+        </div>
+        <div class="station-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><span class="station-map-note">中心は駅。住居候補は道と出口まで確認を。</span></div>
+      </section>
+      <div class="station-body">
+        <aside class="station-index"><h2>この駅の読み方</h2><ol><li><a href="#viewpoint">強みと注意点</a></li><li><a href="#walk">駅から歩く</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">生活の組み立て</a></li><li><a href="#related">近い候補</a></li></ol></aside>
+        <article class="station-content">
+          <section class="content-section" id="viewpoint"><p class="section-kicker">Viewpoints, not scores</p><h2>向いている生活と、確かめたいこと。</h2>
+            <div class="split-notes"><div class="split-note"><h3>この駅の強み</h3><ul>${editorial.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div><div class="split-note"><h3>住む前の確認点</h3><ul>${editorial.cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div></div>
+          </section>
+          <section class="content-section" id="walk"><p class="section-kicker">Walk from the station</p><h2>駅前から住宅地まで。</h2><div class="walk-bands">${editorial.walk.map((row) => `<div class="walk-band"><b>${escapeHtml(row[0])}</b><strong>${escapeHtml(row[1])}</strong><p>${escapeHtml(row[2])}</p></div>`).join("")}</div></section>
+          <section class="content-section" id="photos"><p class="section-kicker">Street evidence</p><h2>公開写真で見る、街の断面。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と編集本文でページは利用できます。</div>'}</section>
+          <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>生活を四つの場面で読む。</h2><div class="life-grid">
+            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
+          </div></section>
+          <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
+        </article>
+      </div>`;
+
+    const map = createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#none" });
+    if (map) new window.maplibregl.Marker({ element: makeMarker({ ...station, status: "feature" }) }).setLngLat([station.lng, station.lat]).addTo(map);
+
+    const toggle = root.querySelector("[data-compare-toggle]");
+    const refreshToggle = () => {
+      const selected = readCompare().includes(station.slug);
+      toggle.setAttribute("aria-pressed", String(selected));
+      toggle.textContent = selected ? "比較から外す" : "比較に追加";
+    };
+    toggle.addEventListener("click", () => {
+      const current = readCompare();
+      writeCompare(current.includes(station.slug)
+        ? current.filter((item) => item !== station.slug)
+        : [...current.slice(-2), station.slug]);
+      refreshToggle();
+    });
+    refreshToggle();
+  }
+
+  function renderCompare() {
+    const form = document.querySelector("#compare-form");
+    const output = document.querySelector("#compare-output");
+    if (!form || !output) return;
+    const selects = [document.querySelector("#compare-1"), document.querySelector("#compare-2"), document.querySelector("#compare-3")];
+    const options = stations.map((station) => `<option value="${station.slug}">${escapeHtml(station.name)}（${escapeHtml(station.area)}）</option>`).join("");
+    selects[0].innerHTML = options;
+    selects[1].innerHTML = options;
+    selects[2].innerHTML = `<option value="">選択しない</option>${options}`;
+
+    const params = new URLSearchParams(location.search);
+    const fromUrl = (params.get("stations") || "").split(",").filter((slug) => stationBySlug.has(slug));
+    const initial = [...new Set(fromUrl.length >= 2 ? fromUrl : (readCompare().length >= 2 ? readCompare() : ["oimachi", "omori", "kamata"]))].slice(0, 3);
+    selects[0].value = initial[0] || "oimachi";
+    selects[1].value = initial[1] || "omori";
+    selects[2].value = initial[2] || "";
+
+    function render() {
+      const slugs = [...new Set(selects.map((select) => select.value).filter(Boolean))];
+      if (slugs.length < 2) {
+        output.innerHTML = '<p class="compare-warning">異なる駅を二つ以上選んでください。</p>';
+        return;
+      }
+      const selected = slugs.map((slug) => stationBySlug.get(slug));
+      writeCompare(slugs);
+      const rows = [
+        ["利用路線", (station) => `<p>${escapeHtml(station.lines.join(" / "))}</p>`],
+        ["街の骨格", (station) => `<p>${escapeHtml(station.descriptor)}</p>`],
+        ["生活圏の読み方", (station) => `<p>${escapeHtml(station.summary)}</p>`],
+        ["強み", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
+        ["確認点", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
+        ["徒歩圏の変化", (station) => `<p>${defaultsFor(station).walk.map((row) => `${escapeHtml(row[0])} ${escapeHtml(row[1])}`).join(" → ")}</p>`],
+        ["生活条件", (station) => `<p>${station.tags.map((tag) => escapeHtml(tagLabels[tag] || tag)).join("・")}</p>`]
+      ];
+      output.innerHTML = `<table class="compare-table"><thead><tr><th>比較軸</th>${selected.map((station) => `<th><a class="compare-name" href="${stationUrl(station)}">${escapeHtml(station.name)}</a><span class="compare-descriptor">${escapeHtml(station.descriptor)}</span></th>`).join("")}</tr></thead><tbody>${rows.map(([label, renderCell]) => `<tr><th>${label}</th>${selected.map((station) => `<td>${renderCell(station)}</td>`).join("")}</tr>`).join("")}</tbody></table><div class="compare-actions">${selected.map((station) => `<a class="button secondary" href="${stationUrl(station)}">${escapeHtml(station.name)}の詳細</a>`).join("")}</div>`;
+      history.replaceState(null, "", `?stations=${slugs.map(encodeURIComponent).join(",")}`);
+    }
+
+    form.addEventListener("submit", (event) => { event.preventDefault(); render(); });
+    render();
+  }
+
+  function renderCredits() {
+    const root = document.querySelector("#credit-list");
+    if (!root) return;
+    root.innerHTML = `<table class="credit-table"><thead><tr><th>写真</th><th>撮影・公開者</th><th>撮影時期</th><th>利用条件</th><th>変更</th></tr></thead><tbody>${Object.values(sources).map((photo) => `<tr><td><a href="${escapeHtml(photo.sourceUrl)}" rel="external noopener">${escapeHtml(photo.alt)}</a></td><td>${escapeHtml(photo.author)}</td><td>${escapeHtml(photo.date)}</td><td><a href="${escapeHtml(photo.licenseUrl)}" rel="license external noopener">${escapeHtml(photo.license)}</a></td><td>${escapeHtml(photo.changes)}</td></tr>`).join("")}</tbody></table>`;
+  }
+
+  setupNavigation();
+  updateCompareCounts();
+  const page = document.body.dataset.page;
+  if (page === "home") renderHome();
+  if (page === "station") renderStation();
+  if (page === "compare") renderCompare();
+  if (page === "credits") renderCredits();
+})();

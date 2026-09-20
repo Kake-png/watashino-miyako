@@ -1,0 +1,25 @@
+# Dependencies and local tooling
+node_modules/
+.wrangler/
+.cache/
+coverage/
+dist/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs and generated local QA/output files
+*.log
+qa-*
+*.zip
+

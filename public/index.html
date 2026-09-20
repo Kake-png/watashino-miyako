@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="物件ではなく、駅と街の特色から住む場所を探す南東京の生活圏アトラス。">
+  <meta name="theme-color" content="#183f39">
+  <title>駅まち図譜｜南東京・生活圏案内</title>
+  <link rel="preconnect" href="https://tiles.openfreemap.org">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.10.0/dist/maplibre-gl.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script defer src="https://unpkg.com/maplibre-gl@6.10.0/dist/maplibre-gl.js"></script>
+  <script defer src="/assets/data.js"></script>
+  <script defer src="/assets/app.js"></script>
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="駅まち図譜 トップページ">
+      <span class="brand-mark" aria-hidden="true">図</span>
+      <span><strong>駅まち図譜</strong><small>南東京・生活圏案内</small></span>
+    </a>
+    <span></span>
+    <nav class="site-nav" id="site-nav" aria-label="主要メニュー">
+      <a href="#atlas" aria-current="page">地図から探す</a>
+      <a href="/compare">駅を比べる <span class="compare-count" data-compare-count>0</span></a>
+      <a href="/about">この図譜について</a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目次</button>
+  </header>
+
+  <main class="page" id="main">
+    <section class="intro">
+      <div class="intro-main">
+        <p class="kicker">Station &amp; neighbourhood atlas</p>
+        <h1>物件を探す前に、<br><em>街の暮らし方</em>を読む。</h1>
+        <p class="intro-lead">通勤時間や家賃だけでは見えない、駅前から住宅地までの変化。南東京の駅を、交通・買い物・道・休日の過ごし方から見比べるための地図帳です。</p>
+      </div>
+      <aside class="intro-side" aria-label="サイトの三つの方針">
+        <div class="intro-note"><b>01</b><div><strong>順位をつけない</strong><p>総合点ではなく、何が強く何が弱いかを並べます。</p></div></div>
+        <div class="intro-note"><b>02</b><div><strong>徒歩圏で読む</strong><p>駅前、5分、10分。街の切り替わりを追います。</p></div></div>
+        <div class="intro-note"><b>03</b><div><strong>写真に出典を</strong><p>公開画像の作者・撮影時期・ライセンスを表示します。</p></div></div>
+      </aside>
+    </section>
+
+    <section class="atlas-layout" id="atlas" aria-labelledby="atlas-title">
+      <div class="atlas-panel">
+        <div class="panel-head">
+          <p class="section-kicker">South Tokyo edition</p>
+          <h2 id="atlas-title">生活条件から駅を探す</h2>
+          <p>条件は順位ではなく、地図上の候補を絞るために使います。</p>
+          <div class="search-box">
+            <label class="visually-hidden" for="station-search">駅名・路線名から検索</label>
+            <input id="station-search" type="search" placeholder="駅名・路線名から検索" autocomplete="off">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
+          </div>
+        </div>
+        <div class="filters">
+          <h3>生活条件</h3>
+          <div class="filter-list" id="filter-list"></div>
+        </div>
+        <div class="result-summary"><span id="result-count">0駅を表示</span><span>南東京〜横浜</span></div>
+        <div class="station-list" id="station-list" aria-live="polite"></div>
+      </div>
+      <div class="map-wrap">
+        <div id="map" aria-label="南東京の駅地図"></div>
+        <div class="map-fallback" id="map-fallback">地図を読み込めませんでした。左の駅一覧はそのまま利用できます。</div>
+        <p class="map-note">赤い点は写真・本文を収録した詳細版。緑の点は街の概要を収録した基礎版です。</p>
+      </div>
+    </section>
+
+    <section class="how-section" aria-labelledby="how-title">
+      <div class="how-title">
+        <p class="section-kicker">How to read</p>
+        <h2 id="how-title">街を、駅名ひとつで<br>決めないために。</h2>
+        <p>同じ徒歩10分でも、出口・坂・線路・大通りで生活は変わります。図譜は候補を決める答えではなく、現地下見で見る場所を増やす道具です。</p>
+      </div>
+      <div class="how-steps">
+        <article class="how-step"><b>1</b><h3>地図で候補を残す</h3><p>路線と生活条件を重ね、ランキングにせず複数駅を残します。</p></article>
+        <article class="how-step"><b>2</b><h3>徒歩圏の変化を読む</h3><p>駅前から5分、10分。写真と文章で街の密度が変わる地点を見ます。</p></article>
+        <article class="how-step"><b>3</b><h3>同じ軸で比べる</h3><p>交通、日常、街の表情、注意点を同じ表に並べ、下見先を決めます。</p></article>
+      </div>
+    </section>
+
+    <section class="featured-section" aria-labelledby="featured-title">
+      <div class="section-head">
+        <div><p class="section-kicker">Edited station guides</p><h2 id="featured-title">最初の三つの駅</h2></div>
+        <p>大井町・大森・蒲田は、同じ京浜東北線南部でも暮らし方が違います。公開ライセンスを確認した街の写真とともに、方向と徒歩圏を読みます。</p>
+      </div>
+      <div class="featured-grid" id="featured-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><strong>駅まち図譜</strong><p>試作公開版。街の記述は公開前の編集原稿であり、住居選択の最終判断は現地・公式情報で確認してください。</p></div>
+    <div class="footer-links"><a href="/about">写真・地図の出典</a><a href="/compare">駅を比較する</a><a href="mailto:contact@example.com">訂正を知らせる</a></div>
+  </footer>
+</body>
+</html>

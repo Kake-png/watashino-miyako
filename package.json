@@ -1,0 +1,12 @@
+{
+  "name": "ekimachi-zufu-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/validate.mjs",
+    "deploy": "npx wrangler pages deploy public"
+  }
+}
