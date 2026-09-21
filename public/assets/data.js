@@ -25,12 +25,12 @@ const ATLAS_DATA = (() => {
     "musashikoyama-palm": {
       file: "images/musashikoyama-palm.webp",
       alt: "武蔵小山のパルム商店街",
-      caption: "駅から長く続く商店街は、雨の日の買い物にも使いやすい。撮影時期が古いため店舗の現況は別途確認したい。",
-      date: "2011年11月",
-      author: "Aimaimyi",
-      license: "CC BY-SA 3.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Musashi-koyama_Palm_-01.jpg",
+      caption: "駅から長く続く商店街は、雨の日の買い物にも使いやすい。南側入口から、アーケードと周辺の生活動線を確認できる。",
+      date: "2026年8月",
+      author: "Suikotei",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Musashi-koyama_Palm_20260801.jpg",
       changes: "縮小・WebP変換・表示時にトリミング"
     },
     "togoshiginza-station": {
@@ -189,13 +189,13 @@ const ATLAS_DATA = (() => {
     },
     "omori-station": {
       file: "images/omori-station.webp",
-      alt: "大森駅東口の駅舎",
+      alt: "大森駅東口の駅舎と駅前広場",
       caption: "大森駅東口。駅前の商業と、海側・山側で異なる徒歩環境を見比べたい。",
-      date: "2008年9月",
-      author: "パリカール",
-      license: "CC BY-SA 3.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:JR_omori_station_east_entrance.JPG",
+      date: "2026年5月",
+      author: "Punkssand",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:%E5%A4%A7%E6%A3%AE%E9%A7%85%E6%9D%B1%E5%8F%A3.jpg",
       changes: "縮小・WebP変換・表示時にトリミング"
     },
     "omori-14": {

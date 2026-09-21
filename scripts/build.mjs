@@ -28,6 +28,8 @@ for (const station of ATLAS_DATA.stations) {
 
 writePage("compare", fs.readFileSync(path.join(templates, "compare.html"), "utf8"));
 writePage("about", fs.readFileSync(path.join(templates, "about.html"), "utf8"));
+writePage("privacy", fs.readFileSync(path.join(templates, "privacy.html"), "utf8"));
+writePage("site-policy", fs.readFileSync(path.join(templates, "site-policy.html"), "utf8"));
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
