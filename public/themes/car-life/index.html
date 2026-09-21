@@ -1,122 +1,32 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="駅前の便利さだけでなく、幹線道路や高速入口方面へ出る動線と、車なしの日常がどう両立するかを見ます。">
-  <meta name="theme-color" content="#183f39">
-  <title>車を使う人の街探し｜駅まち図譜（仮）</title>
-  <link rel="preconnect" href="https://tiles.openfreemap.org">
-  <link rel="stylesheet" href="/vendor/maplibre-gl.css">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/style.css">
-  <script type="module" src="/assets/app.js"></script>
+  <meta name="theme-color" content="#f7f8fa"><title>車を使う人の街探し｜駅まち図譜（仮）</title>
+  <link rel="preconnect" href="https://tiles.openfreemap.org"><link rel="stylesheet" href="/vendor/maplibre-gl.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css"><script type="module" src="/assets/app.js"></script>
 </head>
 <body data-page="home" data-theme-id="car-life">
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="駅まち図譜 トップページ">
-      <span class="brand-mark" aria-hidden="true">図</span>
-      <span><strong>駅まち図譜 <i>仮</i></strong><small>街から選ぶ、住む場所</small></span>
-    </a>
-    <span></span>
-    <nav class="site-nav" id="site-nav" aria-label="主要メニュー">
-      <a href="#lenses">暮らしの視点</a>
-      <a href="#atlas" aria-current="page">地図から探す</a>
-      <a href="/compare/">駅を比べる <span class="compare-count" data-compare-count>0</span></a>
-      <a href="/about/">この図譜について</a>
-    </nav>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目次</button>
+    <a class="brand" href="/" aria-label="駅まち図譜 トップページ"><span class="brand-mark" aria-hidden="true">図</span><span><strong>駅まち図譜 <i>仮</i></strong><small>暮らしの条件から駅を探す</small></span></a><span></span>
+    <nav class="site-nav" id="site-nav" aria-label="主要メニュー"><a href="#atlas" aria-current="page">駅を探す</a><a href="/compare/">駅を比べる <span class="compare-count" data-compare-count>0</span></a><a href="#guides">駅ガイド</a><a href="/about/">このサイトについて</a></nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">メニュー</button>
   </header>
-
-  <main class="page" id="main">
-    <section class="intro intro-cover">
-      <div class="intro-main">
-        <p class="edition-label">南東京15駅・試作版 <span>ISSUE 01</span></p>
-        <p class="kicker">A lifestyle lens for the city</p>
-        <h1>車を使う人の街探し</h1>
-        <p class="intro-lead">駅前の便利さだけでなく、幹線道路や高速入口方面へ出る動線と、車なしの日常がどう両立するかを見ます。条件は入口です。地図を開いたあとで、別の条件を足したり、すべて外したりできます。</p>
-        <div class="intro-actions"><a class="button" href="#atlas">地図を開く</a><a class="text-link" href="/compare/">3駅を比べる →</a></div>
-      </div>
-      <div class="cover-photos" aria-label="南東京の街の写真">
-        <figure class="cover-photo cover-photo-main"><img src="/images/oimachi-street.webp" alt="大井町の駅前通り" width="1200" height="900"><figcaption>大井町・駅前から住宅側へ</figcaption></figure>
-        <figure class="cover-photo cover-photo-sub"><img src="/images/omori-20.webp" alt="大森の街路" width="1200" height="900"><figcaption>大森・山側と海側</figcaption></figure>
-        <figure class="cover-photo cover-photo-strip"><img src="/images/kamata-asuto.webp" alt="蒲田の商店街" width="1200" height="900"><figcaption>蒲田・夜まで続く日常</figcaption></figure>
-        <p class="cover-note"><b>順位ではなく、生活の違い。</b><br>写真は公開元・撮影時期・ライセンスを確認して掲載します。</p>
-      </div>
-    </section>
-
-    <section class="lens-section" id="lenses" aria-labelledby="lens-title">
-      <div class="lens-heading">
-        <p class="section-kicker">Choose a point of view</p>
-        <h2 id="lens-title">私は、こんな暮らしをしたい。</h2>
-        <p>気になる視点を選ぶと、同じ地図に関係する条件をあらかじめ重ねます。選ばずに全部から探しても、あとから条件を足しても構いません。</p>
-        <a class="lens-all" href="/#atlas" data-theme-link="all">条件を決めず、すべてから探す →</a>
-      </div>
-      <div class="lens-list" aria-label="暮らしの視点">
-        <a href="/themes/weekend-mobility/#atlas" data-theme-link="weekend-mobility"><span>01</span><strong>平日は都心、休日は遠くへ出たい</strong><small>空港・新幹線・高速道路・自転車</small></a>
-        <a href="/themes/car-life/#atlas" data-theme-link="car-life"><span>02</span><strong>車を持つ、またはカーシェアを使いたい</strong><small>幹線道路・高速入口方面・駅前道路</small></a>
-        <a href="/themes/riverside/#atlas" data-theme-link="riverside"><span>03</span><strong>川・公園・自転車のある生活がしたい</strong><small>河川敷・海辺・散歩・サイクリング</small></a>
-        <a href="/themes/books-culture/#atlas" data-theme-link="books-culture"><span>04</span><strong>本屋・図書館・文化施設に寄りたい</strong><small>本・大学・商店街・周辺の文化拠点</small></a>
-        <a href="/themes/night-life/#atlas" data-theme-link="night-life"><span>05</span><strong>夜遅くまで食事や買い物を済ませたい</strong><small>夜の店・飲食街・実際の帰宅路</small></a>
-        <a href="/themes/family-daily/#atlas" data-theme-link="family-daily"><span>06</span><strong>家族の日常動線を優先したい</strong><small>買い物・公園・自転車・住宅側</small></a>
-      </div>
-    </section>
-
-    <div id="theme-story-slot"><section class="theme-story" aria-labelledby="theme-story-title"><div><p class="section-kicker">A selected point of view</p><h2 id="theme-story-title">車を使う人の街探し</h2><p>駅前の便利さだけでなく、幹線道路や高速入口方面へ出る動線と、車なしの日常がどう両立するかを見ます。</p></div><ol><li>幹線道路・高速入口方面への動線</li><li>駅前道路と住宅街の走りやすさ</li><li>鉄道・徒歩と車の使い分け</li></ol><a href="/#atlas">視点を外して、すべてから探す →</a></section></div>
-
+  <main class="page search-first" id="main">
+    <section class="search-intro" aria-labelledby="page-title"><div><p>南東京〜横浜・15駅</p><h1 id="page-title">暮らしの条件から、住む駅を探す</h1></div><p>通勤時間だけでは分からない、夜の買い物、車の使いやすさ、川や公園、本屋などから候補を絞れます。</p></section>
     <section class="atlas-layout" id="atlas" aria-labelledby="atlas-title">
       <div class="atlas-panel">
-        <div class="panel-head">
-          <p class="section-kicker">South Tokyo edition</p>
-          <h2 id="atlas-title">生活条件から駅を探す</h2>
-          <p>言葉の相性で駅を残し、地図と駅ページで確かめます。</p>
-          <div class="theme-context" id="theme-context" hidden></div>
-          <div class="search-box">
-            <label class="visually-hidden" for="station-search">駅名・路線名から検索</label>
-            <input id="station-search" type="search" placeholder="駅名・路線名から検索" autocomplete="off">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
-          </div>
-        </div>
-        <div class="filters">
-          <div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">条件を外す</button></div>
-          <div class="filter-list" id="filter-list"></div>
-        </div>
-        <div class="result-summary"><span id="result-count">0駅を表示</span><span>南東京〜横浜</span></div>
-        <div class="station-list" id="station-list" aria-live="polite"></div>
+        <div class="panel-head"><h2 id="atlas-title">駅を絞り込む</h2><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
+        <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">暮らしの視点</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
+        <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
+        <div class="result-summary"><strong id="result-count">15駅</strong><span>候補駅</span></div><div class="station-list" id="station-list" aria-live="polite"></div>
       </div>
-      <div class="map-wrap">
-        <div id="map" aria-label="南東京の駅地図"></div>
-        <div class="map-fallback" id="map-fallback">地図を読み込めませんでした。左の駅一覧はそのまま利用できます。</div>
-        <p class="map-note"><b>15駅を試作収録。</b><br>点を選ぶと街の要点と詳細ページを開けます。</p>
-      </div>
+      <div class="map-wrap"><div id="map" aria-label="南東京の駅地図"></div><div class="map-fallback" id="map-fallback" aria-label="駅の位置関係"></div><div class="map-toolbar"><span>地図上の駅を選ぶと概要を表示</span><a href="/compare/">選んだ駅を比較</a></div></div>
     </section>
-
-    <section class="how-section" aria-labelledby="how-title">
-      <div class="how-title">
-        <p class="section-kicker">How to read</p>
-        <h2 id="how-title">街を、駅名ひとつで<br>決めないために。</h2>
-        <p>同じ徒歩10分でも、出口・坂・線路・大通りで生活は変わります。図譜は候補を決める答えではなく、現地下見で見る場所を増やす道具です。</p>
-      </div>
-      <div class="how-steps">
-        <article class="how-step"><b>1</b><h3>地図で候補を残す</h3><p>路線と生活条件を重ね、ランキングにせず複数駅を残します。</p></article>
-        <article class="how-step"><b>2</b><h3>徒歩圏の変化を読む</h3><p>駅前から5分、10分。写真と文章で街の密度が変わる地点を見ます。</p></article>
-        <article class="how-step"><b>3</b><h3>同じ軸で比べる</h3><p>交通、日常、街の表情、注意点を同じ表に並べ、下見先を決めます。</p></article>
-      </div>
-    </section>
-
-    <section class="featured-section" aria-labelledby="featured-title">
-      <div class="section-head">
-        <div><p class="section-kicker">Edited station guides</p><h2 id="featured-title">街の写真から、駅を開く。</h2></div>
-        <p>15駅すべてに街の読み方と公開ライセンス写真を用意しました。まずは沿線の違いが見えやすい6駅から。</p>
-      </div>
-      <div class="featured-grid" id="featured-grid"></div>
-    </section>
+    <section class="quick-note" aria-label="使い方"><strong>総合順位はつけていません。</strong><span>条件で候補を残し、駅ページで出口・道路・徒歩圏の違いを確認してください。</span></section>
+    <section class="featured-section" id="guides" aria-labelledby="featured-title"><div class="section-head"><div><p class="section-kicker">駅ガイド</p><h2 id="featured-title">街の様子を確かめる</h2></div><p>写真、交通、買い物、車、散歩、夜の帰宅を駅ごとにまとめています。</p></div><div class="featured-grid" id="featured-grid"></div></section>
   </main>
-
-  <footer class="site-footer">
-    <div><strong>駅まち図譜（仮）</strong><p>試作公開版。街の記述は住居選択の入口です。最終判断は現地・公式情報で確認してください。</p></div>
-    <div class="footer-links"><a href="/about/">写真・地図の出典</a><a href="/compare/">駅を比較する</a></div>
-  </footer>
-</body>
-</html>
+  <footer class="site-footer"><div><strong>駅まち図譜（仮）</strong><p>試作公開版。住居選びの最終判断は現地と公式情報で確認してください。</p></div><div class="footer-links"><a href="/about/">写真・地図の出典</a><a href="/compare/">駅を比較する</a></div></footer>
+</body></html>

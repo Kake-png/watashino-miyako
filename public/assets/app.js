@@ -1,4 +1,3 @@
-import * as maplibregl from "/vendor/maplibre-gl.mjs";
 import { ATLAS_DATA } from "/assets/data.js";
 
 (() => {
@@ -8,6 +7,17 @@ import { ATLAS_DATA } from "/assets/data.js";
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const compareKey = "ekimachi-compare-v1";
+  let maplibregl = null;
+  let mapLibraryPromise = null;
+
+  function loadMapLibrary() {
+    if (!mapLibraryPromise) {
+      mapLibraryPromise = import("/vendor/maplibre-gl.mjs")
+        .then((module) => { maplibregl = module; return module; })
+        .catch(() => null);
+    }
+    return mapLibraryPromise;
+  }
 
   const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
@@ -66,14 +76,15 @@ import { ATLAS_DATA } from "/assets/data.js";
     </div>`;
   }
 
-  function createMap(containerId, options = {}) {
+  async function createMap(containerId, options = {}) {
     const fallback = document.querySelector(options.fallbackSelector || "#map-fallback");
-    if (!maplibregl) {
+    const library = await loadMapLibrary();
+    if (!library) {
       if (fallback) fallback.classList.add("is-visible");
       return null;
     }
     try {
-      const map = new maplibregl.Map({
+      const map = new library.Map({
         container: containerId,
         style: "https://tiles.openfreemap.org/styles/liberty",
         center: options.center || [139.7, 35.575],
@@ -92,7 +103,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         window.clearTimeout(loadingTimer);
         if (fallback) fallback.classList.add("is-visible");
       });
-      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(new library.NavigationControl({ showCompass: false }), "top-right");
       return map;
     } catch (_error) {
       if (fallback) fallback.classList.add("is-visible");
@@ -100,7 +111,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
   }
 
-  function renderHome() {
+  async function renderHome() {
     const filterList = document.querySelector("#filter-list");
     const searchInput = document.querySelector("#station-search");
     const stationList = document.querySelector("#station-list");
@@ -110,14 +121,17 @@ import { ATLAS_DATA } from "/assets/data.js";
     const clearFilters = document.querySelector("#clear-filters");
     const themeContext = document.querySelector("#theme-context");
     const featuredTitle = document.querySelector("#featured-title");
+    const perspectiveList = document.querySelector("#perspective-list");
+    const activeFilterCount = document.querySelector("#active-filter-count");
     const themePathMatch = location.pathname.match(/\/themes\/([^/]+)/);
     const themeId = document.body.dataset.themeId || (themePathMatch && decodeURIComponent(themePathMatch[1])) || new URLSearchParams(location.search).get("theme");
     const activeTheme = themeById.get(themeId) || null;
-    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext) return;
+    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList) return;
 
     const activeTags = new Set();
     const markerEntries = [];
     const chipByTag = new Map();
+    const selectedThemes = new Set(activeTheme ? [activeTheme.id] : []);
     let themeDirty = false;
 
     function themeScore(station, tags = activeTheme?.tags || []) {
@@ -125,18 +139,16 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
 
     function updateThemeContext() {
-      document.querySelectorAll("[data-theme-link]").forEach((link) => {
-        const selected = activeTheme ? link.dataset.themeLink === activeTheme.id : link.dataset.themeLink === "all";
-        link.classList.toggle("is-current", selected);
-        if (selected) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
-      });
-      if (!activeTheme) {
+      if (!selectedThemes.size) {
         themeContext.hidden = true;
         return;
       }
       themeContext.hidden = false;
-      themeContext.innerHTML = `<small>現在の視点${themeDirty ? "・条件を調整中" : ""}</small><strong>${escapeHtml(activeTheme.title)}</strong><p>${escapeHtml(activeTheme.description)}</p><div>${activeTheme.criteria.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}<a href="/#atlas">すべてから探す</a></div>`;
+      const labels = [...selectedThemes].map((id) => themeById.get(id)?.navLabel).filter(Boolean);
+      themeContext.innerHTML = `<span>選択中：${labels.map(escapeHtml).join("、")}${themeDirty ? "（条件を調整済み）" : ""}</span>`;
     }
+
+    perspectiveList.innerHTML = themePresets.map((theme) => `<button type="button" class="perspective-chip" data-perspective="${escapeHtml(theme.id)}" aria-pressed="${selectedThemes.has(theme.id)}">${escapeHtml(theme.navLabel)}</button>`).join("");
 
     filterGroups.forEach((group) => {
       const section = document.createElement("section");
@@ -172,7 +184,41 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
     updateThemeContext();
 
-    const map = createMap("map");
+    function syncPerspectiveTags() {
+      const required = new Set([...selectedThemes].flatMap((id) => themeById.get(id)?.tags || []));
+      required.forEach((tag) => activeTags.add(tag));
+      chipByTag.forEach((button, tag) => button.setAttribute("aria-pressed", String(activeTags.has(tag))));
+      perspectiveList.querySelectorAll("[data-perspective]").forEach((button) => button.setAttribute("aria-pressed", String(selectedThemes.has(button.dataset.perspective))));
+      updateThemeContext();
+      applyFilters();
+    }
+
+    perspectiveList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-perspective]");
+      if (!button) return;
+      const id = button.dataset.perspective;
+      const theme = themeById.get(id);
+      if (selectedThemes.has(id)) {
+        selectedThemes.delete(id);
+        const stillNeeded = new Set([...selectedThemes].flatMap((selectedId) => themeById.get(selectedId)?.tags || []));
+        theme.tags.forEach((tag) => { if (!stillNeeded.has(tag)) activeTags.delete(tag); });
+      } else selectedThemes.add(id);
+      themeDirty = false;
+      matchMode.value = selectedThemes.size > 1 ? "any" : (theme?.matchMode || "any");
+      syncPerspectiveTags();
+    });
+
+    const fallback = document.querySelector("#map-fallback");
+    if (fallback) {
+      const lngs = stations.map((station) => station.lng), lats = stations.map((station) => station.lat);
+      const minLng = Math.min(...lngs), maxLng = Math.max(...lngs), minLat = Math.min(...lats), maxLat = Math.max(...lats);
+      fallback.innerHTML = `<p>地図を読み込めないため、駅の位置関係を表示しています。</p><div class="fallback-stations">${stations.map((station) => {
+        const left = 8 + ((station.lng - minLng) / (maxLng - minLng || 1)) * 84;
+        const top = 8 + (1 - (station.lat - minLat) / (maxLat - minLat || 1)) * 80;
+        return `<a href="${stationUrl(station)}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%">${escapeHtml(station.name)}</a>`;
+      }).join("")}</div>`;
+    }
+    const map = await createMap("map");
     if (map) {
       stations.forEach((station) => {
         const element = makeMarker(station);
@@ -211,7 +257,8 @@ import { ATLAS_DATA } from "/assets/data.js";
     function applyFilters() {
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
-      resultCount.textContent = `${matches.length}駅を表示`;
+      resultCount.textContent = `${matches.length}駅`;
+      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size}件選択`;
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
@@ -226,6 +273,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     });
     clearFilters.addEventListener("click", () => {
       activeTags.clear();
+      selectedThemes.clear();
       chipByTag.forEach((button) => button.setAttribute("aria-pressed", "false"));
       themeDirty = Boolean(activeTheme);
       updateThemeContext();
@@ -294,7 +342,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     </figure>`;
   }
 
-  function renderStation() {
+  async function renderStation() {
     const root = document.querySelector("#station-page");
     if (!root) return;
     const params = new URLSearchParams(location.search);
@@ -360,7 +408,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         </article>
       </div>`;
 
-    const map = createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#station-map-fallback" });
+    const map = await createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#station-map-fallback" });
     if (map) {
       const markerElement = makeMarker(station);
       markerElement.classList.add("feature");

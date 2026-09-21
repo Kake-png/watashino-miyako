@@ -34,15 +34,10 @@ const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character)
 })[character]);
 const homeTemplate = fs.readFileSync(path.join(root, "public", "index.html"), "utf8");
 for (const theme of ATLAS_DATA.themePresets) {
-  const story = `<section class="theme-story" aria-labelledby="theme-story-title"><div><p class="section-kicker">A selected point of view</p><h2 id="theme-story-title">${escapeHtml(theme.title)}</h2><p>${escapeHtml(theme.description)}</p></div><ol>${theme.criteria.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol><a href="/#atlas">視点を外して、すべてから探す →</a></section>`;
   const html = homeTemplate
-    .replace("<title>駅まち図譜（仮）｜街の特色から住む駅を探す</title>", `<title>${escapeHtml(theme.title)}｜駅まち図譜（仮）</title>`)
-    .replace('content="物件ではなく、駅と街の特色から住む場所を探す南東京の生活圏アトラス。"', `content="${escapeHtml(theme.description)}"`)
-    .replace('<body data-page="home">', `<body data-page="home" data-theme-id="${escapeHtml(theme.id)}">`)
-    .replace("<p class=\"kicker\">Choose a town before a room</p>", "<p class=\"kicker\">A lifestyle lens for the city</p>")
-    .replace("<h1>駅から、<br><em>暮らしを選ぶ。</em></h1>", `<h1>${escapeHtml(theme.title)}</h1>`)
-    .replace(/<p class="intro-lead">[\s\S]*?<\/p>/, `<p class="intro-lead">${escapeHtml(theme.description)}条件は入口です。地図を開いたあとで、別の条件を足したり、すべて外したりできます。</p>`)
-    .replace('<div id="theme-story-slot"></div>', `<div id="theme-story-slot">${story}</div>`);
+    .replace("<title>駅まち図譜（仮）｜暮らしの条件から駅を探す</title>", `<title>${escapeHtml(theme.title)}｜駅まち図譜（仮）</title>`)
+    .replace('content="通勤時間だけでなく、街の環境や休日の過ごし方から住む駅を探せる南東京の駅検索。"', `content="${escapeHtml(theme.description)}"`)
+    .replace('<body data-page="home">', `<body data-page="home" data-theme-id="${escapeHtml(theme.id)}">`);
   writePage(path.join("themes", theme.id), html);
 }
 
