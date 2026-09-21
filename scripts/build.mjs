@@ -4,13 +4,14 @@ import { fileURLToPath } from "node:url";
 import { ATLAS_DATA } from "../public/assets/data.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const source = path.join(root, "node_modules", "maplibre-gl", "dist");
+const source = path.join(root, "node_modules", "leaflet", "dist");
 const destination = path.join(root, "public", "vendor");
 
 fs.mkdirSync(destination, { recursive: true });
-fs.rmSync(path.join(destination, "maplibre-gl.mjs"), { force: true });
-fs.rmSync(path.join(destination, "maplibre-gl.js"), { force: true });
-for (const file of ["maplibre-gl-csp.js", "maplibre-gl-csp-worker.js", "maplibre-gl.css"]) {
+for (const file of ["maplibre-gl.mjs", "maplibre-gl.js", "maplibre-gl-csp.js", "maplibre-gl-csp-worker.js", "maplibre-gl.css"]) {
+  fs.rmSync(path.join(destination, file), { force: true });
+}
+for (const file of ["leaflet.js", "leaflet.css"]) {
   fs.copyFileSync(path.join(source, file), path.join(destination, file));
 }
 
@@ -49,4 +50,4 @@ for (const legacy of ["station.html", "compare.html", "credits.html", "_redirect
   fs.rmSync(path.join(root, "public", legacy), { force: true });
 }
 
-console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied MapLibre browser assets.`);
+console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied Leaflet browser assets.`);

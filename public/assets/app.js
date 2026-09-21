@@ -7,20 +7,7 @@ import { ATLAS_DATA } from "/assets/data.js";
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const compareKey = "ekimachi-compare-v1";
-  let maplibregl = null;
-  let mapLibraryPromise = null;
-
-  function loadMapLibrary() {
-    if (!mapLibraryPromise) {
-      mapLibraryPromise = Promise.resolve(window.maplibregl || null)
-        .then((library) => {
-          maplibregl = library;
-          if (library) library.workerUrl = "/vendor/maplibre-gl-csp-worker.js?v=5.24.0";
-          return library;
-        });
-    }
-    return mapLibraryPromise;
-  }
+  const leaflet = window.L || null;
 
   const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
@@ -67,6 +54,25 @@ import { ATLAS_DATA } from "/assets/data.js";
     marker.className = "atlas-marker";
     marker.setAttribute("aria-label", `${station.name}駅の概要を表示`);
     marker.dataset.slug = station.slug;
+    marker.textContent = station.name;
+    return marker;
+  }
+
+  function addStationMarker(map, station, { feature = false, strong = false, popup = true } = {}) {
+    const element = makeMarker(station);
+    if (feature || strong) element.classList.add(feature ? "feature" : "theme-strong");
+    const icon = leaflet.divIcon({
+      className: "atlas-label-icon",
+      html: element.outerHTML,
+      iconSize: null,
+      iconAnchor: [17, 17]
+    });
+    const marker = leaflet.marker([station.lat, station.lng], {
+      icon,
+      keyboard: true,
+      title: `${station.name}駅`
+    });
+    if (popup) marker.bindPopup(popupHtml(station), { offset: [0, -10], closeButton: false });
     return marker;
   }
 
@@ -81,54 +87,29 @@ import { ATLAS_DATA } from "/assets/data.js";
 
   async function createMap(containerId, options = {}) {
     const fallback = document.querySelector(options.fallbackSelector || "#map-fallback");
-    const library = await loadMapLibrary();
-    if (!library) {
+    if (!leaflet) {
       if (fallback) fallback.classList.add("is-visible");
       return null;
     }
     try {
-      const rasterFallbackStyle = {
-        version: 8,
-        sources: {
-          osm: {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: "© OpenStreetMap contributors"
-          }
-        },
-        layers: [{ id: "osm", type: "raster", source: "osm" }]
-      };
-      const map = new library.Map({
-        container: containerId,
-        style: "https://tiles.openfreemap.org/styles/liberty",
-        center: options.center || [139.7, 35.575],
-        zoom: options.zoom || 10.7,
-        minZoom: 2.8,
-        maxZoom: 18,
-        cooperativeGestures: true,
-        attributionControl: false
-      });
-      let mapReady = false;
-      let usingRasterFallback = false;
-      const markReady = () => {
-        mapReady = true;
+      const [lng, lat] = options.center || [139.7, 35.575];
+      const map = leaflet.map(containerId, {
+        zoomControl: false,
+        attributionControl: false,
+        minZoom: 3,
+        maxZoom: 19,
+        scrollWheelZoom: true
+      }).setView([lat, lng], options.zoom || 10.7);
+      leaflet.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+      }).addTo(map);
+      leaflet.control.zoom({ position: "topright" }).addTo(map);
+      leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
+      map.whenReady(() => {
         if (fallback) fallback.classList.remove("is-visible");
-      };
-      const switchToRaster = () => {
-        if (mapReady || usingRasterFallback) return;
-        usingRasterFallback = true;
-        map.setStyle(rasterFallbackStyle);
-      };
-      map.on("style.load", markReady);
-      map.on("load", markReady);
-      map.on("error", () => { if (!mapReady) switchToRaster(); });
-      window.setTimeout(switchToRaster, 8000);
-      window.setTimeout(() => {
-        if (!mapReady && fallback) fallback.classList.add("is-visible");
-      }, 16000);
-      map.addControl(new library.NavigationControl({ showCompass: false }), "top-right");
-      map.addControl(new library.AttributionControl({ compact: true }), "bottom-left");
+        window.setTimeout(() => map.invalidateSize(), 0);
+      });
       return map;
     } catch (_error) {
       if (fallback) fallback.classList.add("is-visible");
@@ -231,11 +212,10 @@ import { ATLAS_DATA } from "/assets/data.js";
     const map = await createMap("map");
     if (map) {
       stations.forEach((station) => {
-        const element = makeMarker(station);
-        const popup = new maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(popupHtml(station));
-        const marker = new maplibregl.Marker({ element }).setLngLat([station.lng, station.lat]).setPopup(popup).addTo(map);
-        if (activeTheme && themeScore(station) >= 2) element.classList.add("theme-strong");
-        markerEntries.push({ station, element, marker });
+        const marker = addStationMarker(map, station, {
+          strong: Boolean(activeTheme && themeScore(station) >= 2)
+        }).addTo(map);
+        markerEntries.push({ station, marker });
       });
     }
 
@@ -426,10 +406,7 @@ import { ATLAS_DATA } from "/assets/data.js";
 
     const map = await createMap("station-map", { center: [station.lng, station.lat], zoom: 13.2, fallbackSelector: "#station-map-fallback" });
     if (map) {
-      const markerElement = makeMarker(station);
-      markerElement.classList.add("feature");
-      markerElement.setAttribute("aria-label", `${station.name}駅`);
-      new maplibregl.Marker({ element: markerElement }).setLngLat([station.lng, station.lat]).addTo(map);
+      addStationMarker(map, station, { feature: true, popup: false }).addTo(map);
     }
 
     const toggle = root.querySelector("[data-compare-toggle]");
@@ -474,13 +451,11 @@ import { ATLAS_DATA } from "/assets/data.js";
       const selected = slugs.map((slug) => stationBySlug.get(slug));
       writeCompare(slugs);
       const rows = [
-        ["利用路線", (station) => `<p>${escapeHtml(station.lines.join(" / "))}</p>`],
-        ["街の骨格", (station) => `<p>${escapeHtml(station.descriptor)}</p>`],
-        ["生活圏の読み方", (station) => `<p>${escapeHtml(station.summary)}</p>`],
-        ["強み", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
-        ["確認点", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
-        ["徒歩圏の変化", (station) => `<p>${defaultsFor(station).walk.map((row) => `${escapeHtml(row[0])} ${escapeHtml(row[1])}`).join(" → ")}</p>`],
-        ["住居費の見方", (station) => `<p>${escapeHtml(station.practical.cost)}</p>`],
+        ["交通", (station) => `<p>${station.lines.length}路線：${escapeHtml(station.lines.join(" / "))}</p>`],
+        ["街の概要", (station) => `<p>${escapeHtml(station.descriptor)}</p>`],
+        ["向いている暮らし", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
+        ["住む前に確認", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
+        ["家賃の見方", (station) => `<p>${escapeHtml(station.practical.cost)}</p>`],
         ["車・高速道路", (station) => `<p>${escapeHtml(station.practical.car)}</p>`],
         ["散歩・自転車", (station) => `<p>${escapeHtml(station.practical.outdoors)}</p>`],
         ["夜の帰宅", (station) => `<p>${escapeHtml(station.practical.evening)}</p>`],
