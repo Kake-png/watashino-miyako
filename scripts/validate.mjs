@@ -49,7 +49,7 @@ for (const theme of themePresets) {
   if (!fs.existsSync(path.join(publicRoot, "themes", theme.id, "index.html"))) errors.push(`${theme.id}: missing physical theme page`);
 }
 
-for (const file of ["index.html", "compare/index.html", "about/index.html", "privacy/index.html", "site-policy/index.html", "_headers", "vendor/maplibre-gl.mjs", "vendor/maplibre-gl.css"]) {
+for (const file of ["index.html", "compare/index.html", "about/index.html", "_headers", "vendor/maplibre-gl.mjs", "vendor/maplibre-gl.css"]) {
   if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing publish asset: ${file}`);
 }
 

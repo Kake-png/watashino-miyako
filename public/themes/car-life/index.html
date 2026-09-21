@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="駅前の便利さだけでなく、幹線道路や高速入口方面へ出る動線と、車なしの日常がどう両立するかを見ます。">
   <meta name="theme-color" content="#f7f8fa"><title>車を使う人の街探し｜駅まち図譜（仮）</title>
-  <link rel="preconnect" href="https://tile.openstreetmap.org"><link rel="stylesheet" href="/vendor/maplibre-gl.css">
+  <link rel="preconnect" href="https://tiles.openfreemap.org"><link rel="stylesheet" href="/vendor/maplibre-gl.css">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css"><script type="module" src="/assets/app.js"></script>
 </head>
 <body data-page="home" data-theme-id="car-life">
@@ -20,7 +20,7 @@
       <div class="atlas-panel">
         <div class="panel-head"><h2 id="atlas-title">駅を絞り込む</h2><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
         <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">暮らしの視点</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
-        <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">条件の組み合わせ</label><select id="match-mode"><option value="all">すべてに合う（AND）</option><option value="any">どれかに合う（OR）</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
+        <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
         <div class="result-summary"><strong id="result-count">15駅</strong><span>候補駅</span></div><div class="station-list" id="station-list" aria-live="polite"></div>
       </div>
       <div class="map-wrap"><div id="map" aria-label="南東京の駅地図"></div><div class="map-fallback" id="map-fallback" aria-label="駅の位置関係"></div><div class="map-toolbar"><span>地図上の駅を選ぶと概要を表示</span><a href="/compare/">選んだ駅を比較</a></div></div>
@@ -28,5 +28,5 @@
     <section class="quick-note" aria-label="使い方"><strong>総合順位はつけていません。</strong><span>条件で候補を残し、駅ページで出口・道路・徒歩圏の違いを確認してください。</span></section>
     <section class="featured-section" id="guides" aria-labelledby="featured-title"><div class="section-head"><div><p class="section-kicker">駅ガイド</p><h2 id="featured-title">街の様子を確かめる</h2></div><p>写真、交通、買い物、車、散歩、夜の帰宅を駅ごとにまとめています。</p></div><div class="featured-grid" id="featured-grid"></div></section>
   </main>
-  <footer class="site-footer"><div><strong>駅まち図譜（仮）</strong><p>試作公開版。住居選びの最終判断は現地と公式情報で確認してください。</p></div><div class="footer-links"><a href="/about/">このサイトについて</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a><a href="/compare/">駅を比較する</a></div></footer>
+  <footer class="site-footer"><div><strong>駅まち図譜（仮）</strong><p>試作公開版。住居選びの最終判断は現地と公式情報で確認してください。</p></div><div class="footer-links"><a href="/about/">写真・地図の出典</a><a href="/compare/">駅を比較する</a></div></footer>
 </body></html>
