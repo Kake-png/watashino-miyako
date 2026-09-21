@@ -56,7 +56,7 @@ for (const file of ["index.html", "compare/index.html", "about/index.html", "pri
 const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=12"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=13"')) errors.push("Home is missing versioned module app script");
 
 if (errors.length) {
   console.error(errors.join("\n"));

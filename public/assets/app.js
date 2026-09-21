@@ -49,9 +49,9 @@ import { ATLAS_DATA } from "/assets/data.js";
   }
 
   function makeMarker(station) {
-    const marker = document.createElement("button");
-    marker.type = "button";
-    marker.className = "atlas-marker";
+    const marker = document.createElement("span");
+    marker.className = "station-map-label";
+    marker.style.cssText = "display:inline-flex;align-items:center;justify-content:center;width:max-content;min-width:58px;height:30px;padding:0 9px;border:2px solid #fff8e7;border-radius:3px;background:#1f4b43;color:#fff;box-shadow:0 2px 7px rgb(16 48 42 / 32%);font:700 13px/1.1 system-ui,sans-serif;white-space:nowrap;";
     marker.setAttribute("aria-label", `${station.name}駅の概要を表示`);
     marker.dataset.slug = station.slug;
     marker.textContent = station.name;
@@ -60,7 +60,7 @@ import { ATLAS_DATA } from "/assets/data.js";
 
   function addStationMarker(map, station, { feature = false, strong = false, popup = true } = {}) {
     const element = makeMarker(station);
-    if (feature || strong) element.classList.add(feature ? "feature" : "theme-strong");
+    if (feature || strong) element.style.background = "#b34a35";
     const labelWidth = Math.max(58, [...station.name].length * 15 + 20);
     const icon = leaflet.divIcon({
       className: "atlas-label-icon",
