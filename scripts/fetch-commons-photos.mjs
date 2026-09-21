@@ -4,7 +4,9 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const manifest = JSON.parse(fs.readFileSync(path.join(root, "scripts", "commons-photo-manifest.json"), "utf8"));
+const fullManifest = JSON.parse(fs.readFileSync(path.join(root, "scripts", "commons-photo-manifest.json"), "utf8"));
+const requestedKeys = new Set(process.argv.slice(2));
+const manifest = requestedKeys.size ? fullManifest.filter((item) => requestedKeys.has(item.key)) : fullManifest;
 const outputDirectory = path.join(root, "public", "images");
 const metadataPath = path.join(root, "scripts", "commons-photo-metadata.generated.json");
 const allowedLicenses = new Set(["CC0", "CC BY 4.0", "CC BY-SA 4.0", "CC BY-SA 3.0", "CC BY 3.0"]);
@@ -18,7 +20,7 @@ const plainText = (value = "") => value
   .trim();
 
 fs.mkdirSync(outputDirectory, { recursive: true });
-const generated = {};
+const generated = fs.existsSync(metadataPath) ? JSON.parse(fs.readFileSync(metadataPath, "utf8")) : {};
 
 for (const item of manifest) {
   const api = new URL("https://commons.wikimedia.org/w/api.php");

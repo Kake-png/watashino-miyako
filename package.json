@@ -13,6 +13,6 @@
     "deploy": "npx wrangler pages deploy public"
   },
   "dependencies": {
-    "maplibre-gl": "6.10.0"
+    "maplibre-gl": "5.24.0"
   }
 }

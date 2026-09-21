@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="大型書店だけでなく、図書館、大学、商店街や周辺駅への行きやすさを含めて、本のある日常を見ます。">
-  <meta name="theme-color" content="#f7f8fa"><title>本と文化の近くで暮らす街探し｜駅まち図譜（仮）</title>
-  <link rel="preconnect" href="https://tiles.openfreemap.org"><link rel="stylesheet" href="/vendor/maplibre-gl.css">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css"><script type="module" src="/assets/app.js"></script>
+  <meta name="theme-color" content="#1f4b43"><title>本と文化の近くで暮らす街探し｜駅まち図譜（仮）</title>
+  <link rel="preconnect" href="https://tiles.openfreemap.org"><link rel="preconnect" href="https://tile.openstreetmap.org"><link rel="stylesheet" href="/vendor/maplibre-gl.css?v=5.24.0">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css?v=10"><link rel="stylesheet" href="/assets/revision.css?v=10"><script src="/vendor/maplibre-gl-csp.js?v=5.24.0"></script><script type="module" src="/assets/app.js?v=10"></script>
 </head>
 <body data-page="home" data-theme-id="books-culture">
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -15,10 +15,9 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">メニュー</button>
   </header>
   <main class="page search-first" id="main">
-    <section class="search-intro" aria-labelledby="page-title"><div><p>南東京〜横浜・15駅</p><h1 id="page-title">暮らしの条件から、住む駅を探す</h1></div><p>通勤時間だけでは分からない、夜の買い物、車の使いやすさ、川や公園、本屋などから候補を絞れます。</p></section>
     <section class="atlas-layout" id="atlas" aria-labelledby="atlas-title">
       <div class="atlas-panel">
-        <div class="panel-head"><h2 id="atlas-title">駅を絞り込む</h2><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
+        <div class="panel-head"><p>南東京〜横浜・15駅</p><h1 id="atlas-title">暮らしから駅を探す</h1><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
         <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">暮らしの視点</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
         <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
         <div class="result-summary"><strong id="result-count">15駅</strong><span>候補駅</span></div><div class="station-list" id="station-list" aria-live="polite"></div>
@@ -28,5 +27,5 @@
     <section class="quick-note" aria-label="使い方"><strong>総合順位はつけていません。</strong><span>条件で候補を残し、駅ページで出口・道路・徒歩圏の違いを確認してください。</span></section>
     <section class="featured-section" id="guides" aria-labelledby="featured-title"><div class="section-head"><div><p class="section-kicker">駅ガイド</p><h2 id="featured-title">街の様子を確かめる</h2></div><p>写真、交通、買い物、車、散歩、夜の帰宅を駅ごとにまとめています。</p></div><div class="featured-grid" id="featured-grid"></div></section>
   </main>
-  <footer class="site-footer"><div><strong>駅まち図譜（仮）</strong><p>試作公開版。住居選びの最終判断は現地と公式情報で確認してください。</p></div><div class="footer-links"><a href="/about/">写真・地図の出典</a><a href="/compare/">駅を比較する</a></div></footer>
+  <footer class="site-footer"><div><strong>駅まち図譜（仮）</strong><p>試作公開版。住居選びの最終判断は現地と公式情報で確認してください。</p></div><div class="footer-links"><a href="/about/">このサイトについて</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a><a href="/compare/">駅を比較する</a></div></footer>
 </body></html>

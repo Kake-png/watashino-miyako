@@ -12,9 +12,12 @@ import { ATLAS_DATA } from "/assets/data.js";
 
   function loadMapLibrary() {
     if (!mapLibraryPromise) {
-      mapLibraryPromise = import("/vendor/maplibre-gl.mjs")
-        .then((module) => { maplibregl = module; return module; })
-        .catch(() => null);
+      mapLibraryPromise = Promise.resolve(window.maplibregl || null)
+        .then((library) => {
+          maplibregl = library;
+          if (library) library.workerUrl = "/vendor/maplibre-gl-csp-worker.js?v=5.24.0";
+          return library;
+        });
     }
     return mapLibraryPromise;
   }
@@ -69,7 +72,7 @@ import { ATLAS_DATA } from "/assets/data.js";
 
   function popupHtml(station) {
     return `<div class="map-popup">
-      <small>街ガイド・写真${station.images?.length || 0}点</small>
+      <small>${escapeHtml(station.area)}の駅ガイド</small>
       <h3>${escapeHtml(station.name)}</h3>
       <p>${escapeHtml(station.descriptor)}</p>
       <a href="${stationUrl(station)}">駅の図譜を読む →</a>
@@ -84,26 +87,48 @@ import { ATLAS_DATA } from "/assets/data.js";
       return null;
     }
     try {
+      const rasterFallbackStyle = {
+        version: 8,
+        sources: {
+          osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap contributors"
+          }
+        },
+        layers: [{ id: "osm", type: "raster", source: "osm" }]
+      };
       const map = new library.Map({
         container: containerId,
         style: "https://tiles.openfreemap.org/styles/liberty",
         center: options.center || [139.7, 35.575],
         zoom: options.zoom || 10.7,
+        minZoom: 2.8,
+        maxZoom: 18,
         cooperativeGestures: true,
-        attributionControl: true
+        attributionControl: false
       });
-      const loadingTimer = window.setTimeout(() => {
-        if (!map.loaded() && fallback) fallback.classList.add("is-visible");
-      }, 9000);
-      map.once("load", () => {
-        window.clearTimeout(loadingTimer);
+      let mapReady = false;
+      let usingRasterFallback = false;
+      const markReady = () => {
+        mapReady = true;
         if (fallback) fallback.classList.remove("is-visible");
-      });
-      map.once("error", () => {
-        window.clearTimeout(loadingTimer);
-        if (fallback) fallback.classList.add("is-visible");
-      });
+      };
+      const switchToRaster = () => {
+        if (mapReady || usingRasterFallback) return;
+        usingRasterFallback = true;
+        map.setStyle(rasterFallbackStyle);
+      };
+      map.on("style.load", markReady);
+      map.on("load", markReady);
+      map.on("error", () => { if (!mapReady) switchToRaster(); });
+      window.setTimeout(switchToRaster, 8000);
+      window.setTimeout(() => {
+        if (!mapReady && fallback) fallback.classList.add("is-visible");
+      }, 16000);
       map.addControl(new library.NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(new library.AttributionControl({ compact: true }), "bottom-left");
       return map;
     } catch (_error) {
       if (fallback) fallback.classList.add("is-visible");
@@ -175,19 +200,10 @@ import { ATLAS_DATA } from "/assets/data.js";
       filterList.append(section);
     });
 
-    if (activeTheme) {
-      matchMode.value = activeTheme.matchMode;
-      activeTheme.tags.forEach((tag) => {
-        activeTags.add(tag);
-        chipByTag.get(tag)?.setAttribute("aria-pressed", "true");
-      });
-    }
+    matchMode.value = "all";
     updateThemeContext();
 
-    function syncPerspectiveTags() {
-      const required = new Set([...selectedThemes].flatMap((id) => themeById.get(id)?.tags || []));
-      required.forEach((tag) => activeTags.add(tag));
-      chipByTag.forEach((button, tag) => button.setAttribute("aria-pressed", String(activeTags.has(tag))));
+    function syncPerspectives() {
       perspectiveList.querySelectorAll("[data-perspective]").forEach((button) => button.setAttribute("aria-pressed", String(selectedThemes.has(button.dataset.perspective))));
       updateThemeContext();
       applyFilters();
@@ -197,15 +213,9 @@ import { ATLAS_DATA } from "/assets/data.js";
       const button = event.target.closest("[data-perspective]");
       if (!button) return;
       const id = button.dataset.perspective;
-      const theme = themeById.get(id);
-      if (selectedThemes.has(id)) {
-        selectedThemes.delete(id);
-        const stillNeeded = new Set([...selectedThemes].flatMap((selectedId) => themeById.get(selectedId)?.tags || []));
-        theme.tags.forEach((tag) => { if (!stillNeeded.has(tag)) activeTags.delete(tag); });
-      } else selectedThemes.add(id);
+      if (selectedThemes.has(id)) selectedThemes.delete(id); else selectedThemes.add(id);
       themeDirty = false;
-      matchMode.value = selectedThemes.size > 1 ? "any" : (theme?.matchMode || "any");
-      syncPerspectiveTags();
+      syncPerspectives();
     });
 
     const fallback = document.querySelector("#map-fallback");
@@ -215,7 +225,7 @@ import { ATLAS_DATA } from "/assets/data.js";
       fallback.innerHTML = `<p>地図を読み込めないため、駅の位置関係を表示しています。</p><div class="fallback-stations">${stations.map((station) => {
         const left = 8 + ((station.lng - minLng) / (maxLng - minLng || 1)) * 84;
         const top = 8 + (1 - (station.lat - minLat) / (maxLat - minLat || 1)) * 80;
-        return `<a href="${stationUrl(station)}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%">${escapeHtml(station.name)}</a>`;
+        return `<a href="${stationUrl(station)}" data-fallback-slug="${escapeHtml(station.slug)}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%">${escapeHtml(station.name)}</a>`;
       }).join("")}</div>`;
     }
     const map = await createMap("map");
@@ -233,20 +243,22 @@ import { ATLAS_DATA } from "/assets/data.js";
       return `<a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
         <span class="row-code">${String(index + 1).padStart(2, "0")}</span>
         <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p></span>
-        <span class="row-status">${station.images?.length ? `写真${station.images.length}点` : "街ガイド"}</span>
+        <span class="row-status" aria-hidden="true">→</span>
       </a>`;
     }
 
     function currentMatches() {
       const query = searchInput.value.trim().toLocaleLowerCase("ja");
       const selectedTags = [...activeTags];
+      const selectedThemeObjects = [...selectedThemes].map((id) => themeById.get(id)).filter(Boolean);
       const matches = stations.filter((station) => {
         const text = [station.name, station.kana, station.area, ...station.lines].join(" ").toLocaleLowerCase("ja");
         const textMatches = !query || text.includes(query);
         const tagsMatch = selectedTags.length === 0 || (matchMode.value === "any"
           ? selectedTags.some((tag) => station.tags.includes(tag))
           : selectedTags.every((tag) => station.tags.includes(tag)));
-        return textMatches && tagsMatch;
+        const themesMatch = selectedThemeObjects.every((theme) => theme.tags.some((tag) => station.tags.includes(tag)));
+        return textMatches && tagsMatch && themesMatch;
       });
       if (selectedTags.length && matchMode.value === "any") {
         matches.sort((a, b) => themeScore(b, selectedTags) - themeScore(a, selectedTags));
@@ -258,11 +270,15 @@ import { ATLAS_DATA } from "/assets/data.js";
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
       resultCount.textContent = `${matches.length}駅`;
-      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size}件選択`;
+      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size}件選択`;
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
-      markerEntries.forEach(({ station, element }) => element.classList.toggle("is-muted", !visible.has(station.slug)));
+      markerEntries.forEach(({ station, marker }) => {
+        if (visible.has(station.slug)) marker.addTo(map);
+        else marker.remove();
+      });
+      document.querySelectorAll("[data-fallback-slug]").forEach((node) => { node.hidden = !visible.has(node.dataset.fallbackSlug); });
     }
 
     searchInput.addEventListener("input", applyFilters);
@@ -289,7 +305,7 @@ import { ATLAS_DATA } from "/assets/data.js";
       const photo = sources[station.images[0]];
       return `<a class="feature-link" href="${stationUrl(station)}">
         <div class="feature-image"><img src="${escapeHtml(imageUrl(photo))}" alt="${escapeHtml(photo.alt)}" loading="lazy" width="1200" height="900"></div>
-        <div class="feature-copy"><small>${escapeHtml(station.area)} · 写真${station.images.length}点</small><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.descriptor)}</p></div>
+        <div class="feature-copy"><small>${escapeHtml(station.area)}</small><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.descriptor)}</p></div>
       </a>`;
     }).join("");
   }
@@ -391,7 +407,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         <div><small>車と道路</small><p>${escapeHtml(practical.car)}</p></div>
         <div><small>散歩・自転車</small><p>${escapeHtml(practical.outdoors)}</p></div>
       </section>
-      <nav class="station-lenses" aria-label="別の暮らしの視点で探す"><span>この駅を入口に、別の視点へ</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/#lenses">すべての視点</a></nav>
+      <nav class="station-lenses" aria-label="別の暮らしの視点で探す"><span>この駅を入口に、別の視点へ</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/#atlas">すべての視点</a></nav>
       <div class="station-body">
         <aside class="station-index"><h2>この駅の読み方</h2><ol><li><a href="#viewpoint">強みと注意点</a></li><li><a href="#walk">駅から歩く</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">生活の組み立て</a></li><li><a href="#related">近い候補</a></li></ol></aside>
         <article class="station-content">
@@ -470,7 +486,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         ["夜の帰宅", (station) => `<p>${escapeHtml(station.practical.evening)}</p>`],
         ["生活条件", (station) => `<p>${station.tags.map((tag) => escapeHtml(tagLabels[tag] || tag)).join("・")}</p>`]
       ];
-      output.innerHTML = `<table class="compare-table"><thead><tr><th>比較軸</th>${selected.map((station) => `<th><a class="compare-name" href="${stationUrl(station)}">${escapeHtml(station.name)}</a><span class="compare-descriptor">${escapeHtml(station.descriptor)}</span></th>`).join("")}</tr></thead><tbody>${rows.map(([label, renderCell]) => `<tr><th>${label}</th>${selected.map((station) => `<td>${renderCell(station)}</td>`).join("")}</tr>`).join("")}</tbody></table><div class="compare-actions">${selected.map((station) => `<a class="button secondary" href="${stationUrl(station)}">${escapeHtml(station.name)}の詳細</a>`).join("")}</div>`;
+      output.innerHTML = `<table class="compare-table"><colgroup><col class="compare-axis">${selected.map(() => '<col class="compare-station">').join("")}</colgroup><thead><tr><th>比較軸</th>${selected.map((station) => `<th><a class="compare-name" href="${stationUrl(station)}">${escapeHtml(station.name)}</a><span class="compare-descriptor">${escapeHtml(station.descriptor)}</span></th>`).join("")}</tr></thead><tbody>${rows.map(([label, renderCell]) => `<tr><th>${label}</th>${selected.map((station) => `<td>${renderCell(station)}</td>`).join("")}</tr>`).join("")}</tbody></table><div class="compare-actions">${selected.map((station) => `<a class="button secondary" href="${stationUrl(station)}">${escapeHtml(station.name)}の詳細</a>`).join("")}</div>`;
       history.replaceState(null, "", `?stations=${slugs.map(encodeURIComponent).join(",")}`);
     }
 

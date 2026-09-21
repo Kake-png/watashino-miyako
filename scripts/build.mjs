@@ -8,7 +8,9 @@ const source = path.join(root, "node_modules", "maplibre-gl", "dist");
 const destination = path.join(root, "public", "vendor");
 
 fs.mkdirSync(destination, { recursive: true });
-for (const file of ["maplibre-gl.mjs", "maplibre-gl.css"]) {
+fs.rmSync(path.join(destination, "maplibre-gl.mjs"), { force: true });
+fs.rmSync(path.join(destination, "maplibre-gl.js"), { force: true });
+for (const file of ["maplibre-gl-csp.js", "maplibre-gl-csp-worker.js", "maplibre-gl.css"]) {
   fs.copyFileSync(path.join(source, file), path.join(destination, file));
 }
 
@@ -28,6 +30,8 @@ for (const station of ATLAS_DATA.stations) {
 
 writePage("compare", fs.readFileSync(path.join(templates, "compare.html"), "utf8"));
 writePage("about", fs.readFileSync(path.join(templates, "about.html"), "utf8"));
+writePage("privacy", fs.readFileSync(path.join(templates, "privacy.html"), "utf8"));
+writePage("site-policy", fs.readFileSync(path.join(templates, "site-policy.html"), "utf8"));
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"

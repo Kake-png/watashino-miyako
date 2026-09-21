@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="南東京の駅を、総合点ではなく生活の条件で比較します。">
-  <meta name="theme-color" content="#183f39">
+  <meta name="theme-color" content="#1f4b43">
   <title>駅を比べる｜駅まち図譜（仮）</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/style.css">
-  <script type="module" src="/assets/app.js"></script>
+  <link rel="stylesheet" href="/assets/style.css?v=10">
+  <link rel="stylesheet" href="/assets/revision.css?v=10">
+  <script src="/vendor/maplibre-gl-csp.js?v=5.24.0"></script>
+  <script type="module" src="/assets/app.js?v=10"></script>
 </head>
 <body data-page="compare">
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -16,18 +18,17 @@
     <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">図</span><span><strong>駅まち図譜 <i>仮</i></strong><small>街から選ぶ、住む場所</small></span></a>
     <span></span>
     <nav class="site-nav" id="site-nav" aria-label="主要メニュー">
-      <a href="/#lenses">暮らしの視点</a>
+      <a href="/#atlas">暮らしの視点</a>
       <a href="/#atlas">地図から探す</a>
       <a href="/compare/" aria-current="page">駅を比べる <span class="compare-count" data-compare-count>0</span></a>
       <a href="/about/">この図譜について</a>
     </nav>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">目次</button>
   </header>
-  <main class="page" id="main">
-    <header class="page-title compare-title">
-      <p class="kicker">Compare station areas</p>
-      <h1>駅を、同じ生活条件で比べる。</h1>
-      <p>便利さの総合点は出しません。移動、住居費の見方、車、散歩、夜の帰宅まで横に並べます。</p>
+  <main class="page compare-page" id="main">
+    <header class="compare-title">
+      <div><p>駅を比べる</p><h1>生活条件を横並びで確認</h1></div>
+      <p>移動、住居費、車、散歩、夜の帰宅を、同じ項目で比べます。</p>
     </header>
     <form class="compare-controls" id="compare-form">
       <label>一つ目<select name="station-1" id="compare-1"></select></label>
@@ -39,7 +40,7 @@
   </main>
   <footer class="site-footer">
     <div><strong>駅まち図譜（仮）</strong><p>比較結果は、現地で見る違いを増やすためのものです。</p></div>
-    <div class="footer-links"><a href="/#atlas">地図へ戻る</a><a href="/about/">データの見方</a></div>
+    <div class="footer-links"><a href="/#atlas">地図へ戻る</a><a href="/about/">データの見方</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a></div>
   </footer>
 </body>
 </html>

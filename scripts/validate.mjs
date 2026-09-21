@@ -49,13 +49,14 @@ for (const theme of themePresets) {
   if (!fs.existsSync(path.join(publicRoot, "themes", theme.id, "index.html"))) errors.push(`${theme.id}: missing physical theme page`);
 }
 
-for (const file of ["index.html", "compare/index.html", "about/index.html", "_headers", "vendor/maplibre-gl.mjs", "vendor/maplibre-gl.css"]) {
+for (const file of ["index.html", "compare/index.html", "about/index.html", "privacy/index.html", "site-policy/index.html", "_headers", "assets/revision.css", "vendor/maplibre-gl-csp.js", "vendor/maplibre-gl-csp-worker.js", "vendor/maplibre-gl.css"]) {
   if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing publish asset: ${file}`);
 }
 
 const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
 if (indexHtml.includes("unpkg.com/maplibre")) errors.push("Home still references external MapLibre bundle");
-if (!indexHtml.includes('type="module" src="/assets/app.js"')) errors.push("Home is missing module app script");
+if (!indexHtml.includes('src="/vendor/maplibre-gl-csp.js?v=5.24.0"')) errors.push("Home is missing local CSP-safe MapLibre browser bundle");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=10"')) errors.push("Home is missing versioned module app script");
 
 if (errors.length) {
   console.error(errors.join("\n"));
