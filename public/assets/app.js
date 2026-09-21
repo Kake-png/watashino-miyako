@@ -61,11 +61,12 @@ import { ATLAS_DATA } from "/assets/data.js";
   function addStationMarker(map, station, { feature = false, strong = false, popup = true } = {}) {
     const element = makeMarker(station);
     if (feature || strong) element.classList.add(feature ? "feature" : "theme-strong");
+    const labelWidth = Math.max(58, [...station.name].length * 15 + 20);
     const icon = leaflet.divIcon({
       className: "atlas-label-icon",
       html: element.outerHTML,
-      iconSize: null,
-      iconAnchor: [17, 17]
+      iconSize: [labelWidth, 32],
+      iconAnchor: [labelWidth / 2, 16]
     });
     const marker = leaflet.marker([station.lat, station.lng], {
       icon,
