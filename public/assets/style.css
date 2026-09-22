@@ -789,16 +789,6 @@ body { background: var(--paper); line-height: 1.65; }
 .filter-mode label { font-size: 12px; font-weight: 700; }
 .filter-mode select { min-height: 35px; padding: 0 28px 0 9px; border: 1px solid var(--ink); border-radius: 0; background: var(--white); font-size: 12px; }
 .filter-list { display: block; }
-.rent-filter { display: grid; grid-template-columns: 105px minmax(145px, 190px) 1fr; align-items: center; gap: 8px; padding: 8px 0 10px; border-top: 1px solid var(--rule); }
-.rent-filter label { font-size: 14px; font-weight: 700; }
-.rent-filter select { min-height: 34px; padding: 0 28px 0 9px; border: 1px solid #c8d0d9; background: var(--white); font-size: 14px; }
-.rent-filter small { color: var(--muted); font-size: 12px; }
-.criteria-guide { margin-top: 10px; border-top: 1px solid var(--rule); }
-.criteria-guide > summary { padding: 10px 0 4px; color: var(--blue); font-size: 13px; cursor: pointer; }
-.criteria-guide dl { margin: 8px 0; }
-.criteria-guide dl div { display: grid; grid-template-columns: 150px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px dotted var(--rule); }
-.criteria-guide dt { font-weight: 700; font-size: 13px; }
-.criteria-guide dd, .criteria-guide p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .filter-group { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--rule); }
 .filter-group-head h4 { margin: 1px 0 1px; font-size: 12px; }
 .filter-group-head p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.45; }
@@ -857,7 +847,6 @@ body { background: var(--paper); line-height: 1.65; }
 }
 
 @media (max-width: 720px) {
-  .rent-filter, .criteria-guide dl div { grid-template-columns: 1fr; gap: 4px; }
   .intro-cover .intro-main { padding: 38px 22px 42px; }
   .edition-label { margin-bottom: 34px; }
   .intro-cover h1 { font-size: clamp(47px, 15vw, 66px); }

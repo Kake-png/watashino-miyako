@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="本屋、図書館、古書店などに日常的に立ち寄りやすい駅を探します。">
-  <meta name="theme-color" content="#1f4b43"><title>本屋・図書館の近くで暮らす街を探す｜駅まち図譜（仮）</title>
+  <meta name="description" content="買い物、公園、自転車、静かな住宅側への切り替わりから、家族で動く一日の組み立て方を見ます。">
+  <meta name="theme-color" content="#1f4b43"><title>家族の一日から考える街探し｜駅まち図譜（仮）</title>
   <link rel="preconnect" href="https://tile.openstreetmap.org"><link rel="stylesheet" href="/vendor/leaflet.css?v=1.9.4">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css?v=13"><link rel="stylesheet" href="/assets/revision.css?v=13"><script src="/vendor/leaflet.js?v=1.9.4"></script><script type="module" src="/assets/app.js?v=13"></script>
 </head>
-<body data-page="home" data-theme-id="books">
+<body data-page="home" data-theme-id="family-daily">
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
     <a class="brand" href="/" aria-label="駅まち図譜 トップページ"><span class="brand-mark" aria-hidden="true">図</span><span><strong>駅まち図譜 <i>仮</i></strong><small>暮らしの条件から駅を探す</small></span></a><span></span>
@@ -18,7 +18,7 @@
     <section class="atlas-layout" id="atlas" aria-labelledby="atlas-title">
       <div class="atlas-panel">
         <div class="panel-head"><p>南東京〜横浜・15駅</p><h1 id="atlas-title">暮らしから駅を探す</h1><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
-        <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">求める生活</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
+        <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">暮らしの視点</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
         <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
         <div class="result-summary"><strong id="result-count">15駅</strong><span>候補駅</span></div><div class="station-list" id="station-list" aria-live="polite"></div>
       </div>

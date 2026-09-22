@@ -3,7 +3,7 @@ import { ATLAS_DATA } from "/assets/data.js";
 (() => {
   "use strict";
 
-  const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets } = ATLAS_DATA;
+  const { stations, sources, tagLabels, filterGroups, themePresets } = ATLAS_DATA;
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const compareKey = "ekimachi-compare-v1";
@@ -130,12 +130,10 @@ import { ATLAS_DATA } from "/assets/data.js";
     const featuredTitle = document.querySelector("#featured-title");
     const perspectiveList = document.querySelector("#perspective-list");
     const activeFilterCount = document.querySelector("#active-filter-count");
-    const rentMax = document.querySelector("#rent-max");
-    const criteriaList = document.querySelector("#criteria-list");
     const themePathMatch = location.pathname.match(/\/themes\/([^/]+)/);
     const themeId = document.body.dataset.themeId || (themePathMatch && decodeURIComponent(themePathMatch[1])) || new URLSearchParams(location.search).get("theme");
     const activeTheme = themeById.get(themeId) || null;
-    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList || !rentMax) return;
+    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList) return;
 
     const activeTags = new Set();
     const markerEntries = [];
@@ -169,7 +167,6 @@ import { ATLAS_DATA } from "/assets/data.js";
         button.type = "button";
         button.className = "filter-chip";
         button.textContent = tagLabels[key];
-        button.title = tagCriteria[key] || "";
         button.dataset.tag = key;
         button.setAttribute("aria-pressed", "false");
         options.append(button);
@@ -184,8 +181,6 @@ import { ATLAS_DATA } from "/assets/data.js";
       });
       filterList.append(section);
     });
-
-    if (criteriaList) criteriaList.innerHTML = filterGroups.flatMap((group) => group.tags).map((key) => `<div><dt>${escapeHtml(tagLabels[key])}</dt><dd>${escapeHtml(tagCriteria[key])}</dd></div>`).join("");
 
     matchMode.value = "all";
     updateThemeContext();
@@ -236,7 +231,6 @@ import { ATLAS_DATA } from "/assets/data.js";
     function currentMatches() {
       const query = searchInput.value.trim().toLocaleLowerCase("ja");
       const selectedTags = [...activeTags];
-      const maximumRent = Number(rentMax.value) || null;
       const selectedThemeObjects = [...selectedThemes].map((id) => themeById.get(id)).filter(Boolean);
       const matches = stations.filter((station) => {
         const text = [station.name, station.kana, station.area, ...station.lines].join(" ").toLocaleLowerCase("ja");
@@ -244,11 +238,10 @@ import { ATLAS_DATA } from "/assets/data.js";
         const tagsMatch = selectedTags.length === 0 || (matchMode.value === "any"
           ? selectedTags.some((tag) => station.tags.includes(tag))
           : selectedTags.every((tag) => station.tags.includes(tag)));
-        const rentMatches = maximumRent === null || station.rent1k <= maximumRent;
       const themesMatch = selectedThemeObjects.every((theme) => (theme.matchMode === "all"
         ? theme.tags.every((tag) => station.tags.includes(tag))
         : theme.tags.some((tag) => station.tags.includes(tag))));
-        return textMatches && tagsMatch && themesMatch && rentMatches;
+        return textMatches && tagsMatch && themesMatch;
       });
       if (selectedTags.length && matchMode.value === "any") {
         matches.sort((a, b) => themeScore(b, selectedTags) - themeScore(a, selectedTags));
@@ -260,7 +253,7 @@ import { ATLAS_DATA } from "/assets/data.js";
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
       resultCount.textContent = `${matches.length}駅`;
-      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size + Number(Boolean(rentMax.value))}件選択`;
+      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size}件選択`;
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
@@ -272,7 +265,6 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
 
     searchInput.addEventListener("input", applyFilters);
-    rentMax.addEventListener("change", applyFilters);
     matchMode.addEventListener("change", () => {
       themeDirty = Boolean(activeTheme);
       updateThemeContext();
@@ -281,7 +273,6 @@ import { ATLAS_DATA } from "/assets/data.js";
     clearFilters.addEventListener("click", () => {
       activeTags.clear();
       selectedThemes.clear();
-      rentMax.value = "";
       chipByTag.forEach((button) => button.setAttribute("aria-pressed", "false"));
       themeDirty = Boolean(activeTheme);
       updateThemeContext();
@@ -369,7 +360,6 @@ import { ATLAS_DATA } from "/assets/data.js";
     const photos = station.images || [];
     const leadPhoto = sources[photos[0]];
     const practical = station.practical || {};
-    const rentCopy = `1K平均 ${station.rent1k.toFixed(2)}万円（駅徒歩10分以内・管理費等を除く、2026年9月22日確認）。${practical.cost}`;
     const stationThemes = themePresets
       .map((theme) => ({ theme, score: theme.tags.filter((tag) => station.tags.includes(tag)).length }))
       .filter(({ score }) => score > 0)
@@ -396,7 +386,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         </figure>
       </section>
       <section class="station-facts" aria-label="暮らしの要点">
-        <div><small>1K家賃目安</small><p>${escapeHtml(rentCopy)}</p></div>
+        <div><small>生活費</small><p>${escapeHtml(practical.cost)}</p></div>
         <div><small>車と道路</small><p>${escapeHtml(practical.car)}</p></div>
         <div><small>散歩・自転車</small><p>${escapeHtml(practical.outdoors)}</p></div>
       </section>
@@ -410,7 +400,7 @@ import { ATLAS_DATA } from "/assets/data.js";
           <section class="content-section" id="station-map-section"><p class="section-kicker">Map</p><h2>駅周辺を地図で確認。</h2><div class="content-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><div class="map-fallback" id="station-map-fallback">地図を読み込めませんでした。写真と本文はそのまま利用できます。</div><span class="station-map-note">中心は駅。住む場所を選ぶ時は、出口・線路・幹線道路まで確認を。</span></div></section>
           <section class="content-section" id="photos"><p class="section-kicker">Photos</p><h2>写真で見る街の様子。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と本文でページは利用できます。</div>'}</section>
           <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>暮らしのポイント。</h2><div class="life-grid">
-            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "1K家賃目安", rentCopy], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
+            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "生活費", practical.cost], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
           </div></section>
           <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
         </article>
@@ -467,7 +457,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         ["街の概要", (station) => `<p>${escapeHtml(station.descriptor)}</p>`],
         ["向いている暮らし", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
         ["住む前に確認", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
-        ["1K家賃目安", (station) => `<p><strong>${station.rent1k.toFixed(2)}万円</strong></p><small>${escapeHtml(station.rentSource)}</small>`],
+        ["家賃の見方", (station) => `<p>${escapeHtml(station.practical.cost)}</p>`],
         ["車・高速道路", (station) => `<p>${escapeHtml(station.practical.car)}</p>`],
         ["散歩・自転車", (station) => `<p>${escapeHtml(station.practical.outdoors)}</p>`],
         ["夜の帰宅", (station) => `<p>${escapeHtml(station.practical.evening)}</p>`],
