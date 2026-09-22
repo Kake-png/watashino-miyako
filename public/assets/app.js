@@ -1,4 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js?v=24";
+import { ATLAS_DATA } from "/assets/data.js?v=25";
 
 (() => {
   "use strict";
@@ -107,7 +107,7 @@ import { ATLAS_DATA } from "/assets/data.js?v=24";
         attribution: "© OpenStreetMap contributors"
       }).addTo(map);
       // 背景タイルだけを淡くし、路線・駅ラベルの色と鮮明さは保つ。
-      map.getPane("tilePane").style.filter = "saturate(0.58) brightness(1.12) contrast(0.92)";
+      map.getPane("tilePane").style.filter = "saturate(0.78) brightness(1.03) contrast(1.02)";
       leaflet.control.zoom({ position: "topright" }).addTo(map);
       map.atlasAttributionControl = leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
       map.whenReady(() => {
@@ -320,7 +320,13 @@ import { ATLAS_DATA } from "/assets/data.js?v=24";
 
     function offsetRouteCoordinates(routeId, coordinates) {
       if (coordinates.length < 2) return coordinates.map(([lng, lat]) => [lat, lng]);
-      const points = coordinates.map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]));
+      const rawPoints = coordinates.map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]));
+      // 引きの縮尺では短い測量点を間引いてからレーンをずらす。
+      // これにより、細かな折れが太いギザギザとして見えるのを防ぐ。
+      const simplifyTolerance = map.getZoom() <= 11 ? 2.5 : 0.8;
+      const points = leaflet.LineUtil?.simplify
+        ? leaflet.LineUtil.simplify(rawPoints, simplifyTolerance)
+        : rawPoints;
       const offset = routeDisplayOffsets.get(routeId) || 0;
       if (!offset) return points.map((point) => map.layerPointToLatLng(point));
       const segmentVectors = [];
@@ -354,7 +360,7 @@ import { ATLAS_DATA } from "/assets/data.js?v=24";
         if (!route) return;
         const lines = routeCoordinates(routeId).map((coordinates) => leaflet.polyline(
           offsetRouteCoordinates(routeId, coordinates),
-          { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", interactive: false }
+          { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 1.2, interactive: false }
         ));
         if (!lines.length) return;
         const layer = leaflet.layerGroup(lines).addTo(map);
