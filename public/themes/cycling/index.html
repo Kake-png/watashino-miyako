@@ -5,7 +5,7 @@
   <meta name="description" content="河川敷や海側へ出やすく、休日に自転車で走りやすい駅を探します。">
   <meta name="theme-color" content="#1f4b43"><title>サイクリングしやすい街を探す｜駅まち図譜（仮）</title>
   <link rel="preconnect" href="https://tile.openstreetmap.org"><link rel="stylesheet" href="/vendor/leaflet.css?v=1.9.4">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css?v=13"><link rel="stylesheet" href="/assets/revision.css?v=13"><script src="/vendor/leaflet.js?v=1.9.4"></script><script type="module" src="/assets/app.js?v=13"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/style.css?v=14"><link rel="stylesheet" href="/assets/revision.css?v=14"><script src="/vendor/leaflet.js?v=1.9.4"></script><script type="module" src="/assets/app.js?v=14"></script>
 </head>
 <body data-page="home" data-theme-id="cycling">
   <a class="skip-link" href="#main">本文へ移動</a>
@@ -19,7 +19,7 @@
       <div class="atlas-panel">
         <div class="panel-head"><p>南東京〜横浜・15駅</p><h1 id="atlas-title">暮らしから駅を探す</h1><div class="search-box"><label class="visually-hidden" for="station-search">駅名・路線名から検索</label><input id="station-search" type="search" placeholder="駅名・路線名で検索" autocomplete="off"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></div></div>
         <div class="perspectives" aria-labelledby="perspective-title"><div class="filter-title"><h3 id="perspective-title">求める生活</h3><span>複数選べます</span></div><div class="perspective-list" id="perspective-list"></div><div class="theme-context" id="theme-context" hidden></div></div>
-        <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="filter-list" id="filter-list"></div></div></details>
+        <details class="condition-drawer" open><summary>具体的な条件を選ぶ <span id="active-filter-count">0件選択</span></summary><div class="filters"><div class="filter-mode"><label for="match-mode">選んだ条件を</label><select id="match-mode"><option value="all">すべて満たす</option><option value="any">どれか満たす</option></select><button type="button" id="clear-filters">すべて外す</button></div><div class="rent-filter"><label for="rent-max">1K家賃の目安</label><select id="rent-max"><option value="">指定しない</option><option value="10.5">10.5万円以下</option><option value="11.5">11.5万円以下</option><option value="12.5">12.5万円以下</option></select><small>駅徒歩10分以内・管理費等を除く平均</small></div><div class="filter-list" id="filter-list"></div><details class="criteria-guide"><summary>条件の判定基準を見る</summary><dl id="criteria-list"></dl><p>家賃は2026年9月22日に確認。店舗・運行・賃料は変わるため、最終確認は各公式情報で行ってください。</p></details></div></details>
         <div class="result-summary"><strong id="result-count">15駅</strong><span>候補駅</span></div><div class="station-list" id="station-list" aria-live="polite"></div>
       </div>
       <div class="map-wrap"><div id="map" aria-label="南東京の駅地図"></div><div class="map-fallback" id="map-fallback" aria-label="駅の位置関係"></div><div class="map-toolbar"><span>地図上の駅を選ぶと概要を表示</span><a href="/compare/">選んだ駅を比較</a></div></div>
