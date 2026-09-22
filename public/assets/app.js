@@ -1,5 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js";
-import { ROUTE_GEOMETRY } from "/assets/route-geometry.js";
+import { ATLAS_DATA } from "/assets/data.js?v=19";
 
 (() => {
   "use strict";
@@ -148,6 +147,7 @@ import { ROUTE_GEOMETRY } from "/assets/route-geometry.js";
     const activeRoutes = new Set();
     const markerEntries = [];
     const routeLineLayers = new Map();
+    let routeGeometry = {};
     const chipByTag = new Map();
     const chipByRoute = new Map();
     const selectedThemes = new Set(activeTheme ? [activeTheme.id] : []);
@@ -267,6 +267,18 @@ import { ROUTE_GEOMETRY } from "/assets/route-geometry.js";
         }).addTo(map);
         markerEntries.push({ station, marker });
       });
+      fetch("/assets/route-geometry.json?v=19")
+        .then((response) => {
+          if (!response.ok) throw new Error(`Route geometry request failed: ${response.status}`);
+          return response.json();
+        })
+        .then((data) => {
+          routeGeometry = data;
+          syncRouteLines();
+        })
+        .catch(() => {
+          routeGeometry = {};
+        });
     }
 
     function syncRouteLines() {
@@ -279,7 +291,7 @@ import { ROUTE_GEOMETRY } from "/assets/route-geometry.js";
       });
       activeRoutes.forEach((routeId) => {
         if (routeLineLayers.has(routeId)) return;
-        const geometry = ROUTE_GEOMETRY[routeId];
+        const geometry = routeGeometry[routeId];
         const route = routeById.get(routeId);
         if (!geometry?.features?.length || !route) return;
         const casing = leaflet.geoJSON(geometry, {

@@ -2,10 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATLAS_DATA } from "../public/assets/data.js";
-import { ROUTE_GEOMETRY } from "../public/assets/route-geometry.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(projectRoot, "public");
+const routeGeometry = JSON.parse(fs.readFileSync(path.join(publicRoot, "assets", "route-geometry.json"), "utf8"));
 const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels } = ATLAS_DATA;
 const errors = [];
 const slugs = new Set();
@@ -58,7 +58,7 @@ for (const group of routeGroups) {
     routeIds.add(route.id);
     if (!route.label || !route.color) errors.push(`${route.id}: missing route label or color`);
     if (route.available !== false && !stations.some((station) => station.routes.includes(route.id))) errors.push(`${route.id}: route has no matching station`);
-    if (route.available !== false && !ROUTE_GEOMETRY[route.id]?.features?.length) errors.push(`${route.id}: missing route geometry`);
+    if (route.available !== false && !routeGeometry[route.id]?.features?.length) errors.push(`${route.id}: missing route geometry`);
   }
 }
 
@@ -80,7 +80,7 @@ for (const file of ["index.html", "compare/index.html", "about/index.html", "pri
 const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=15"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=19"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");

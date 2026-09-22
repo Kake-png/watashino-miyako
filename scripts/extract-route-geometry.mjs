@@ -47,6 +47,10 @@ for (const [routeId, matches] of Object.entries(definitions)) {
   };
 }
 
-const header = `// Generated from MLIT National Land Numerical Information N02 railway data (2025, CC BY 4.0).\n`;
-fs.writeFileSync(outputPath, `${header}const ROUTE_GEOMETRY = ${JSON.stringify(output)};\n\nexport { ROUTE_GEOMETRY };\n`);
+if (outputPath.endsWith(".json")) {
+  fs.writeFileSync(outputPath, JSON.stringify(output));
+} else {
+  const header = `// Generated from MLIT National Land Numerical Information N02 railway data (2025, CC BY 4.0).\n`;
+  fs.writeFileSync(outputPath, `${header}const ROUTE_GEOMETRY = ${JSON.stringify(output)};\n\nexport { ROUTE_GEOMETRY };\n`);
+}
 console.log(`Wrote ${Object.keys(output).length} route geometries to ${outputPath}`);
