@@ -1,4 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js?v=21";
+import { ATLAS_DATA } from "/assets/data.js?v=22";
 
 (() => {
   "use strict";
@@ -266,31 +266,126 @@ import { ATLAS_DATA } from "/assets/data.js?v=21";
       });
     }
 
-    function syncRouteLines() {
-      if (!map || !leaflet?.geoJSON) return;
-      routeLineLayers.forEach((layer, routeId) => {
-        if (!activeRoutes.has(routeId)) {
-          layer.remove();
-          routeLineLayers.delete(routeId);
-        }
+    function routeCoordinates(routeId) {
+      const geometry = routeGeometry[routeId];
+      if (!geometry?.features?.length) return [];
+      return geometry.features.flatMap((feature) => {
+        if (feature.geometry.type === "LineString") return [feature.geometry.coordinates];
+        if (feature.geometry.type === "MultiLineString") return feature.geometry.coordinates;
+        return [];
       });
-      activeRoutes.forEach((routeId) => {
-        if (routeLineLayers.has(routeId)) return;
-        const geometry = routeGeometry[routeId];
+    }
+
+    const coordinateKey = ([lng, lat]) => `${lng},${lat}`;
+    const sharedRailCorridors = [
+      ["jr-yamanote", "jr-saikyo", "jr-shonan-shinjuku"],
+      ["jr-keihin-tohoku", "jr-shonan-shinjuku", "jr-tokaido", "jr-yokosuka"]
+    ];
+    const segmentKey = (start, end) => {
+      const startKey = coordinateKey(start);
+      const endKey = coordinateKey(end);
+      return startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`;
+    };
+
+    function selectedSegmentRoutes(routeIds) {
+      const routesBySegment = new Map();
+      routeIds.forEach((routeId) => {
+        routeCoordinates(routeId).forEach((coordinates) => {
+          for (let index = 1; index < coordinates.length; index += 1) {
+            const key = segmentKey(coordinates[index - 1], coordinates[index]);
+            if (!routesBySegment.has(key)) routesBySegment.set(key, new Set());
+            routesBySegment.get(key).add(routeId);
+          }
+        });
+      });
+      const routeOrder = new Map([...routeById.keys()].map((routeId, index) => [routeId, index]));
+      return new Map([...routesBySegment].map(([key, routeSet]) => [key, [...routeSet].sort((a, b) => routeOrder.get(a) - routeOrder.get(b))]));
+    }
+
+    function selectedCorridorOffsets(routeIds) {
+      const selected = new Set(routeIds);
+      const routeOrder = new Map([...routeById.keys()].map((routeId, index) => [routeId, index]));
+      const neighbors = new Map(routeIds.map((routeId) => [routeId, new Set()]));
+      sharedRailCorridors.forEach((corridor) => {
+        const active = corridor.filter((routeId) => selected.has(routeId));
+        if (active.length < 2) return;
+        active.forEach((routeId) => active.forEach((otherRouteId) => {
+          if (routeId !== otherRouteId) neighbors.get(routeId).add(otherRouteId);
+        }));
+      });
+
+      const offsets = new Map();
+      const visited = new Set();
+      routeIds.forEach((routeId) => {
+        if (visited.has(routeId) || !neighbors.get(routeId)?.size) return;
+        const component = [];
+        const pending = [routeId];
+        while (pending.length) {
+          const current = pending.pop();
+          if (visited.has(current)) continue;
+          visited.add(current);
+          component.push(current);
+          neighbors.get(current)?.forEach((neighbor) => pending.push(neighbor));
+        }
+        component.sort((a, b) => routeOrder.get(a) - routeOrder.get(b));
+        component.forEach((current, index) => offsets.set(current, (index - (component.length - 1) / 2) * 5.5));
+      });
+      return offsets;
+    }
+
+    function offsetRouteCoordinates(routeId, coordinates, routesBySegment, corridorOffsets) {
+      if (coordinates.length < 2) return coordinates.map(([lng, lat]) => [lat, lng]);
+      const points = coordinates.map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]));
+      const segmentVectors = [];
+
+      for (let index = 1; index < coordinates.length; index += 1) {
+        const start = coordinates[index - 1];
+        const end = coordinates[index];
+        const startPoint = points[index - 1];
+        const endPoint = points[index];
+        const forward = coordinateKey(start) < coordinateKey(end);
+        const dx = (forward ? endPoint.x - startPoint.x : startPoint.x - endPoint.x);
+        const dy = (forward ? endPoint.y - startPoint.y : startPoint.y - endPoint.y);
+        const length = Math.hypot(dx, dy) || 1;
+        const overlappingRoutes = routesBySegment.get(segmentKey(start, end)) || [routeId];
+        const routeIndex = Math.max(0, overlappingRoutes.indexOf(routeId));
+        const offset = overlappingRoutes.length > 1
+          ? (routeIndex - (overlappingRoutes.length - 1) / 2) * 5.5
+          : (corridorOffsets.get(routeId) || 0);
+        segmentVectors.push({ x: (-dy / length) * offset, y: (dx / length) * offset });
+      }
+
+      return points.map((point, index) => {
+        const previous = segmentVectors[index - 1];
+        const next = segmentVectors[index];
+        const count = Number(Boolean(previous)) + Number(Boolean(next));
+        const x = point.x + ((previous?.x || 0) + (next?.x || 0)) / count;
+        const y = point.y + ((previous?.y || 0) + (next?.y || 0)) / count;
+        return map.layerPointToLatLng([x, y]);
+      });
+    }
+
+    function syncRouteLines() {
+      if (!map || !leaflet?.polyline) return;
+      routeLineLayers.forEach((layer) => layer.remove());
+      routeLineLayers.clear();
+      const routeIds = [...activeRoutes];
+      const routesBySegment = selectedSegmentRoutes(routeIds);
+      const corridorOffsets = selectedCorridorOffsets(routeIds);
+      routeIds.forEach((routeId) => {
         const route = routeById.get(routeId);
-        if (!geometry?.features?.length || !route) return;
-        const casing = leaflet.geoJSON(geometry, {
-          interactive: false,
-          style: { color: "#fff", weight: 8, opacity: 0.88, lineCap: "round", lineJoin: "round" }
-        });
-        const color = leaflet.geoJSON(geometry, {
-          interactive: false,
-          style: { color: route.color, weight: 4, opacity: 0.92, lineCap: "round", lineJoin: "round" }
-        });
-        const layer = leaflet.layerGroup([casing, color]).addTo(map);
+        if (!route) return;
+        const lines = routeCoordinates(routeId).map((coordinates) => leaflet.polyline(
+          offsetRouteCoordinates(routeId, coordinates, routesBySegment, corridorOffsets),
+          { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", interactive: false }
+        ));
+        if (!lines.length) return;
+        const layer = leaflet.layerGroup(lines).addTo(map);
         routeLineLayers.set(routeId, layer);
       });
     }
+
+    if (map) map.on("zoomend", syncRouteLines);
 
     function rowHtml(station, index) {
       const nearbySelected = [...activeRoutes].filter((route) => station.nearbyRoutes.includes(route));

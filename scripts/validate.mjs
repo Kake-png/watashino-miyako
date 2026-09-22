@@ -5,7 +5,7 @@ import { ATLAS_DATA } from "../public/assets/data.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(projectRoot, "public");
-const routeGeometrySource = JSON.parse(fs.readFileSync(path.join(publicRoot, "assets", "route-geometry.json"), "utf8"));
+const routeGeometrySource = JSON.parse(fs.readFileSync(path.join(publicRoot, "assets", "route-display-geometry.json"), "utf8"));
 const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels, routeGeometry } = ATLAS_DATA;
 const errors = [];
 const slugs = new Set();
@@ -82,12 +82,15 @@ const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
 const appSource = fs.readFileSync(path.join(publicRoot, "assets", "app.js"), "utf8");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=21"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=22"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");
 if (!indexHtml.includes('id="route-match-mode"')) errors.push("Home is missing the route match mode");
-if (!appSource.includes('from "/assets/data.js?v=21"')) errors.push("App is missing the versioned data module import");
+if (!appSource.includes('from "/assets/data.js?v=22"')) errors.push("App is missing the versioned data module import");
+if (appSource.includes("const casing =")) errors.push("Route display still draws a separate white casing line");
+if (!appSource.includes("offsetRouteCoordinates")) errors.push("Route display is missing overlap offsets");
+if (!appSource.includes("sharedRailCorridors")) errors.push("Route display is missing shared-corridor overlap handling");
 if (appSource.includes('fetch("/assets/route-geometry')) errors.push("Route geometry must not be a required external fetch");
 
 if (errors.length) {

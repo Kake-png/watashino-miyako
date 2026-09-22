@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataPath = path.join(root, "public", "assets", "data.js");
-const geometryPath = path.join(root, "public", "assets", "route-geometry.json");
+const geometryPath = path.join(root, "public", "assets", "route-display-geometry.json");
 const marker = /\/\* ROUTE_GEOMETRY_START \*\/[\s\S]*?\/\* ROUTE_GEOMETRY_END \*\//;
 const source = fs.readFileSync(dataPath, "utf8");
 if (!marker.test(source)) throw new Error("Route geometry markers are missing from data.js");
