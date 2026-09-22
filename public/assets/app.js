@@ -1,4 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js?v=25";
+import { ATLAS_DATA } from "/assets/data.js?v=26";
 
 (() => {
   "use strict";
@@ -107,7 +107,10 @@ import { ATLAS_DATA } from "/assets/data.js?v=25";
         attribution: "© OpenStreetMap contributors"
       }).addTo(map);
       // 背景タイルだけを淡くし、路線・駅ラベルの色と鮮明さは保つ。
-      map.getPane("tilePane").style.filter = "saturate(0.78) brightness(1.03) contrast(1.02)";
+      // 暖色の道路表現だけが前に出すぎないよう彩度を抑えつつ、
+      // 前回失われた輪郭はコントラストで戻す。路線レイヤーには影響しない。
+      map.getPane("tilePane").style.filter = "saturate(0.72) brightness(1.01) contrast(1.08)";
+      map.getPane("tilePane").style.opacity = "0.96";
       leaflet.control.zoom({ position: "topright" }).addTo(map);
       map.atlasAttributionControl = leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
       map.whenReady(() => {
@@ -331,7 +334,9 @@ import { ATLAS_DATA } from "/assets/data.js?v=25";
       if (!offset) return points.map((point) => map.layerPointToLatLng(point));
       const segmentVectors = [];
 
-      for (let index = 1; index < coordinates.length; index += 1) {
+      // points は上で間引かれているため、元データではなく points の点数を使う。
+      // 元データの点数で回すと、補正のある路線だけ未定義点を参照して描画が止まる。
+      for (let index = 1; index < points.length; index += 1) {
         const startPoint = points[index - 1];
         const endPoint = points[index];
         const dx = endPoint.x - startPoint.x;
@@ -358,10 +363,21 @@ import { ATLAS_DATA } from "/assets/data.js?v=25";
       routeIds.forEach((routeId) => {
         const route = routeById.get(routeId);
         if (!route) return;
-        const lines = routeCoordinates(routeId).map((coordinates) => leaflet.polyline(
-          offsetRouteCoordinates(routeId, coordinates),
-          { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 1.2, interactive: false }
-        ));
+        const lines = routeCoordinates(routeId).flatMap((coordinates) => {
+          let displayCoordinates;
+          try {
+            displayCoordinates = offsetRouteCoordinates(routeId, coordinates);
+          } catch (error) {
+            // 路線表示の補助処理が失敗しても、絞り込み操作そのものは止めない。
+            console.warn(`Route display fallback: ${routeId}`, error);
+            displayCoordinates = coordinates.map(([lng, lat]) => [lat, lng]);
+          }
+          if (displayCoordinates.length < 2) return [];
+          return [leaflet.polyline(
+            displayCoordinates,
+            { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 1.2, interactive: false }
+          )];
+        });
         if (!lines.length) return;
         const layer = leaflet.layerGroup(lines).addTo(map);
         routeLineLayers.set(routeId, layer);
