@@ -1,4 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js?v=26";
+import { ATLAS_DATA } from "/assets/data.js?v=28";
 
 (() => {
   "use strict";
