@@ -1,4 +1,5 @@
 import { ATLAS_DATA } from "/assets/data.js";
+import { ROUTE_GEOMETRY } from "/assets/route-geometry.js";
 
 (() => {
   "use strict";
@@ -6,6 +7,7 @@ import { ATLAS_DATA } from "/assets/data.js";
   const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels } = ATLAS_DATA;
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
+  const routeById = new Map(routeGroups.flatMap((group) => group.routes.map((route) => [route.id, route])));
   const compareKey = "ekimachi-compare-v1";
   const leaflet = window.L || null;
 
@@ -106,7 +108,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         attribution: "© OpenStreetMap contributors"
       }).addTo(map);
       leaflet.control.zoom({ position: "topright" }).addTo(map);
-      leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
+      map.atlasAttributionControl = leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
       map.whenReady(() => {
         if (fallback) fallback.classList.remove("is-visible");
         window.setTimeout(() => map.invalidateSize(), 0);
@@ -145,6 +147,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     const activeTags = new Set();
     const activeRoutes = new Set();
     const markerEntries = [];
+    const routeLineLayers = new Map();
     const chipByTag = new Map();
     const chipByRoute = new Map();
     const selectedThemes = new Set(activeTheme ? [activeTheme.id] : []);
@@ -156,7 +159,8 @@ import { ATLAS_DATA } from "/assets/data.js";
 
     function updateThemeContext() {
       if (!selectedThemes.size) {
-        themeContext.hidden = true;
+        themeContext.hidden = false;
+        themeContext.innerHTML = "<span>選択中：なし</span>";
         return;
       }
       themeContext.hidden = false;
@@ -253,11 +257,41 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
     const map = await createMap("map");
     if (map) {
+      map.atlasAttributionControl?.addAttribution('<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html" target="_blank" rel="noopener">国土数値情報 鉄道データ（2025年度）</a>を加工');
+      map.createPane("route-lines");
+      map.getPane("route-lines").style.zIndex = "360";
+      map.getPane("route-lines").style.pointerEvents = "none";
       stations.forEach((station) => {
         const marker = addStationMarker(map, station, {
           strong: Boolean(activeTheme && themeScore(station) >= 2)
         }).addTo(map);
         markerEntries.push({ station, marker });
+      });
+    }
+
+    function syncRouteLines() {
+      if (!map || !leaflet?.geoJSON) return;
+      routeLineLayers.forEach((layer, routeId) => {
+        if (!activeRoutes.has(routeId)) {
+          layer.remove();
+          routeLineLayers.delete(routeId);
+        }
+      });
+      activeRoutes.forEach((routeId) => {
+        if (routeLineLayers.has(routeId)) return;
+        const geometry = ROUTE_GEOMETRY[routeId];
+        const route = routeById.get(routeId);
+        if (!geometry?.features?.length || !route) return;
+        const casing = leaflet.geoJSON(geometry, {
+          pane: "route-lines",
+          style: { pane: "route-lines", color: "#fff", weight: 8, opacity: 0.88, lineCap: "round", lineJoin: "round" }
+        });
+        const color = leaflet.geoJSON(geometry, {
+          pane: "route-lines",
+          style: { pane: "route-lines", color: route.color, weight: 4, opacity: 0.92, lineCap: "round", lineJoin: "round" }
+        });
+        const layer = leaflet.layerGroup([casing, color]).addTo(map);
+        routeLineLayers.set(routeId, layer);
       });
     }
 
@@ -303,6 +337,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     function applyFilters() {
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
+      syncRouteLines();
       resultCount.textContent = `${matches.length}駅`;
       if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size + Number(Boolean(rentMax.value))}件選択`;
       if (activeRouteCount) activeRouteCount.textContent = activeRoutes.size ? `${activeRoutes.size}路線を選択` : "選択なし";

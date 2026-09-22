@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ATLAS_DATA } from "../public/assets/data.js";
+import { ROUTE_GEOMETRY } from "../public/assets/route-geometry.js";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = path.join(projectRoot, "public");
@@ -57,6 +58,7 @@ for (const group of routeGroups) {
     routeIds.add(route.id);
     if (!route.label || !route.color) errors.push(`${route.id}: missing route label or color`);
     if (route.available !== false && !stations.some((station) => station.routes.includes(route.id))) errors.push(`${route.id}: route has no matching station`);
+    if (route.available !== false && !ROUTE_GEOMETRY[route.id]?.features?.length) errors.push(`${route.id}: missing route geometry`);
   }
 }
 
