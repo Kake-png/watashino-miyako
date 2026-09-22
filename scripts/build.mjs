@@ -46,6 +46,10 @@ for (const theme of ATLAS_DATA.themePresets) {
   writePage(path.join("themes", theme.id), html);
 }
 
+for (const staleTheme of ["riverside", "books-culture", "night-life", "family-daily"]) {
+  fs.rmSync(path.join(root, "public", "themes", staleTheme), { recursive: true, force: true });
+}
+
 for (const legacy of ["station.html", "compare.html", "credits.html", "_redirects"]) {
   fs.rmSync(path.join(root, "public", legacy), { force: true });
 }

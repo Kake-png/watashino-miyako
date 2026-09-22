@@ -565,88 +565,88 @@ const ATLAS_DATA = (() => {
   };
 
   const tagLabels = {
-    multi: "複数路線", central: "都心へ出やすい", airport: "羽田へ出やすい", shinkansen: "新幹線へ出やすい",
-    shopping: "駅前で買い物", street: "商店街", books: "本・文化", affordable: "費用を比較しやすい",
-    park: "大きな公園", river: "川・河原", walk: "散歩向き", cycle: "長距離自転車", bike: "日常の自転車",
-    sea: "海・港へ", view: "水辺・夜景", car: "車の動線も検討", expressway: "高速入口方面",
-    quiet: "住宅地へ切替", family: "家族の生活動線", late: "夜遅くも用事", drinks: "飲食・酒場", student: "学生街の要素", racecourse: "競馬場方面", night: "夜も動く街"
+    multi: "複数路線", central: "都心アクセス", airport: "羽田アクセス", shinkansen: "新幹線アクセス",
+    shopping: "駅前で買い物", street: "商店街", books: "本屋・図書館", affordable: "家賃を比べやすい",
+    park: "大きな公園", river: "川・河原", walk: "散歩向き", cycle: "サイクリング向き",
+    sea: "海・港", view: "水辺・夜景", car: "車で出かけやすい", expressway: "高速道路アクセス",
+    quiet: "静かな住宅地", late: "夜遅くまで買い物", drinks: "飲み歩き", student: "大学が近い", racecourse: "競馬場アクセス", night: "夜もにぎわう"
   };
 
   const filterGroups = [
-    { id: "transport", label: "移動", note: "通勤以外の遠出も含める", tags: ["multi", "central", "airport", "shinkansen"] },
-    { id: "daily", label: "日常と費用", note: "買い物と住居費の比較軸", tags: ["shopping", "street", "books", "affordable", "family"] },
-    { id: "outdoors", label: "外で過ごす", note: "散歩・自転車・水辺", tags: ["park", "river", "walk", "cycle", "sea", "view"] },
-    { id: "mobility", label: "車・自転車", note: "所有しやすさではなく動線の候補", tags: ["bike", "car", "expressway"] },
-    { id: "evening", label: "夜と休日", note: "店、人通り、遊び方", tags: ["quiet", "late", "drinks", "student", "racecourse"] }
+    { id: "transport", label: "交通アクセス", note: "通勤以外の遠出も含める", tags: ["multi", "central", "airport", "shinkansen"] },
+    { id: "daily", label: "買い物・住まい", note: "日常の用事と住む場所の比較", tags: ["shopping", "street", "books", "affordable", "quiet"] },
+    { id: "outdoors", label: "外で過ごす", note: "散歩・サイクリング・水辺", tags: ["park", "river", "walk", "cycle", "sea", "view"] },
+    { id: "mobility", label: "車", note: "車で出かける時の交通", tags: ["car", "expressway"] },
+    { id: "evening", label: "夜・遊び", note: "夜の買い物、飲食、遊び", tags: ["late", "drinks", "night", "student", "racecourse"] }
   ];
 
   const themePresets = [
     {
       id: "weekend-mobility",
-      navLabel: "週末に遠くへ",
-      label: "平日は都心、休日は遠くへ出たい",
-      title: "週末に都市を出る人の街探し",
-      description: "通勤だけでなく、羽田・新幹線・高速道路や川沿いへの動き方まで重ねて、休日の起点になる街を探します。",
+      navLabel: "週末旅行",
+      label: "週末に旅行へ出かけたい",
+      title: "週末旅行に出やすい街を探す",
+      description: "羽田・新幹線・高速道路へのアクセスから、旅行へ出る時の起点になる駅を探します。",
       tags: ["airport", "shinkansen", "expressway"],
       matchMode: "any",
-      criteria: ["平日の都心アクセス", "羽田・新幹線・高速道路へのつながり", "川・海・自転車など休日の外出"]
+      criteria: ["都心アクセス", "羽田・新幹線・高速道路へのアクセス", "旅行へ出る時の使いやすさ"]
     },
     {
       id: "car-life",
       navLabel: "車を使う",
       label: "車を持つ、またはカーシェアを使いたい",
       title: "車を使う人の街探し",
-      description: "駅前の便利さだけでなく、幹線道路や高速入口方面へ出る動線と、車なしの日常がどう両立するかを見ます。",
+      description: "駅前の便利さだけでなく、幹線道路や高速道路へ出やすい駅を探します。",
       tags: ["car", "expressway"],
       matchMode: "any",
-      criteria: ["幹線道路・高速入口方面への動線", "駅前道路と住宅街の走りやすさ", "鉄道・徒歩と車の使い分け"]
+      criteria: ["幹線道路・高速道路へのアクセス", "駅前道路の混雑", "車を使わない日の移動"]
     },
     {
-      id: "riverside",
-      navLabel: "川・公園・自転車",
-      label: "川・公園・自転車のある生活がしたい",
-      title: "外を歩き、走り、漕ぐ人の街探し",
-      description: "河川敷、公園、海辺、散歩道、自転車でつながる場所から、家の外で過ごしやすい生活圏を探します。",
-      tags: ["river", "park", "sea", "view"],
+      id: "strolling",
+      navLabel: "散歩",
+      label: "散歩しやすい場所に住みたい",
+      title: "散歩しやすい街を探す",
+      description: "公園、川・河原、海・港など、日常の散歩先を見つけやすい駅を探します。",
+      tags: ["walk"],
       matchMode: "any",
-      criteria: ["日常の散歩先", "河川敷・公園・海辺への距離", "長く走れる自転車動線"]
+      criteria: ["日常の散歩先", "歩きやすい道", "公園・水辺への行きやすさ"]
     },
     {
-      id: "books-culture",
-      navLabel: "本・文化",
-      label: "本屋・図書館・文化施設に寄りたい",
-      title: "本と文化の近くで暮らす街探し",
-      description: "大型書店だけでなく、図書館、大学、商店街や周辺駅への行きやすさを含めて、本のある日常を見ます。",
-      tags: ["books", "student"],
+      id: "cycling",
+      navLabel: "サイクリング",
+      label: "サイクリングを楽しみたい",
+      title: "サイクリングしやすい街を探す",
+      description: "河川敷や海側へ出やすく、休日に自転車で走りやすい駅を探します。",
+      tags: ["cycle"],
       matchMode: "any",
-      criteria: ["本屋・図書館・大学などの文化拠点", "帰宅途中に立ち寄れる日常動線", "周辺の大きな街への短距離アクセス"]
+      criteria: ["走りやすい道", "河川敷・海側へのアクセス", "休日の自転車移動"]
     },
     {
-      id: "night-life",
-      navLabel: "夜の生活",
-      label: "夜遅くまで食事や買い物を済ませたい",
-      title: "夜の帰宅まで考える街探し",
-      description: "夜まで使える店の多さだけでなく、飲食街、駅から住宅側への切り替わり、実際の帰宅路を見ます。",
-      tags: ["late", "drinks", "night"],
+      id: "books",
+      navLabel: "本屋・図書館",
+      label: "本屋や図書館の近くに住みたい",
+      title: "本屋・図書館の近くで暮らす街を探す",
+      description: "本屋、図書館、古書店などに日常的に立ち寄りやすい駅を探します。",
+      tags: ["books"],
       matchMode: "any",
-      criteria: ["遅い時間の買い物と食事", "飲食街と住宅側の距離", "夜に歩く帰宅経路"]
+      criteria: ["本屋・図書館への行きやすさ", "帰宅途中に立ち寄れるか", "周辺の本の店も含めた選択肢"]
     },
     {
-      id: "family-daily",
-      navLabel: "家族の日常",
-      label: "家族の日常動線を優先したい",
-      title: "家族の一日から考える街探し",
-      description: "買い物、公園、自転車、静かな住宅側への切り替わりから、家族で動く一日の組み立て方を見ます。",
-      tags: ["family", "quiet", "park"],
+      id: "drinking",
+      navLabel: "飲み歩き",
+      label: "駅の近くで飲み歩きたい",
+      title: "飲み歩きやすい街を探す",
+      description: "駅の近くに飲食店や酒場が集まり、店を選びながら歩ける駅を探します。",
+      tags: ["drinks"],
       matchMode: "any",
-      criteria: ["買い物と通学・送迎の動線", "公園と日常の自転車移動", "駅前から住宅地への切り替わり"]
+      criteria: ["駅近くの飲食店の多さ", "店を選びながら歩けること", "終電後ではなく夜の外出のしやすさ"]
     }
   ];
 
   const enrichedStations = stations.map((station) => ({
     ...station,
     ...(stationProfiles[station.slug] || {}),
-    tags: [...new Set([...station.tags, ...(tagAdditions[station.slug] || [])])],
+    tags: [...new Set([...station.tags, ...(tagAdditions[station.slug] || [])])].filter((tag) => tag !== "bike" && tag !== "family"),
     practical: practicalNotes[station.slug],
     editorialStatus: "試作調査・2026年9月"
   }));

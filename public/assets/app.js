@@ -238,7 +238,9 @@ import { ATLAS_DATA } from "/assets/data.js";
         const tagsMatch = selectedTags.length === 0 || (matchMode.value === "any"
           ? selectedTags.some((tag) => station.tags.includes(tag))
           : selectedTags.every((tag) => station.tags.includes(tag)));
-        const themesMatch = selectedThemeObjects.every((theme) => theme.tags.some((tag) => station.tags.includes(tag)));
+      const themesMatch = selectedThemeObjects.every((theme) => (theme.matchMode === "all"
+        ? theme.tags.every((tag) => station.tags.includes(tag))
+        : theme.tags.some((tag) => station.tags.includes(tag))));
         return textMatches && tagsMatch && themesMatch;
       });
       if (selectedTags.length && matchMode.value === "any") {
@@ -367,7 +369,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     document.title = `${station.name}｜駅まち図譜`;
     const description = document.querySelector('meta[name="description"]') || document.head.appendChild(document.createElement("meta"));
     description.name = "description";
-    description.content = `${station.name}駅の交通、買い物、街の変化を、駅前から徒歩圏の順に読む生活圏ガイド。`;
+    description.content = `${station.name}駅の交通、買い物、街の特徴を、地図と写真を交えて紹介します。`;
 
     root.innerHTML = `
       <nav class="breadcrumb" aria-label="パンくず"><a href="/">南東京</a> / <span>${escapeHtml(station.area)}</span> / <strong>${escapeHtml(station.name)}</strong></nav>
@@ -390,15 +392,14 @@ import { ATLAS_DATA } from "/assets/data.js";
       </section>
       <nav class="station-lenses" aria-label="別の暮らしの視点で探す"><span>この駅を入口に、別の視点へ</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/#atlas">すべての視点</a></nav>
       <div class="station-body">
-        <aside class="station-index"><h2>この駅の読み方</h2><ol><li><a href="#viewpoint">強みと注意点</a></li><li><a href="#walk">駅から歩く</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">生活の組み立て</a></li><li><a href="#related">近い候補</a></li></ol></aside>
+        <aside class="station-index"><h2>目次</h2><ol><li><a href="#viewpoint">特徴と確認点</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">暮らしのポイント</a></li><li><a href="#related">近い候補</a></li></ol></aside>
         <article class="station-content">
-          <section class="content-section" id="viewpoint"><p class="section-kicker">Viewpoints, not scores</p><h2>向いている生活と、確かめたいこと。</h2>
+          <section class="content-section" id="viewpoint"><p class="section-kicker">Station notes</p><h2>この駅の特徴と確認点。</h2>
             <div class="split-notes"><div class="split-note"><h3>この駅の強み</h3><ul>${editorial.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div><div class="split-note"><h3>住む前の確認点</h3><ul>${editorial.cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div></div>
           </section>
-          <section class="content-section" id="walk"><p class="section-kicker">Walk from the station</p><h2>駅前から住宅地まで。</h2><div class="walk-bands">${editorial.walk.map((row) => `<div class="walk-band"><b>${escapeHtml(row[0])}</b><strong>${escapeHtml(row[1])}</strong><p>${escapeHtml(row[2])}</p></div>`).join("")}</div></section>
-          <section class="content-section" id="station-map-section"><p class="section-kicker">Read the ground</p><h2>写真の位置を、地図で読む。</h2><div class="content-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><div class="map-fallback" id="station-map-fallback">地図を読み込めませんでした。写真と徒歩圏の記述はそのまま利用できます。</div><span class="station-map-note">中心は駅。実際の住居候補は出口・線路・幹線道路まで確認を。</span></div></section>
-          <section class="content-section" id="photos"><p class="section-kicker">Street evidence</p><h2>公開写真で見る、街の断面。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と編集本文でページは利用できます。</div>'}</section>
-          <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>生活を七つの場面で読む。</h2><div class="life-grid">
+          <section class="content-section" id="station-map-section"><p class="section-kicker">Map</p><h2>駅周辺を地図で確認。</h2><div class="content-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><div class="map-fallback" id="station-map-fallback">地図を読み込めませんでした。写真と本文はそのまま利用できます。</div><span class="station-map-note">中心は駅。住む場所を選ぶ時は、出口・線路・幹線道路まで確認を。</span></div></section>
+          <section class="content-section" id="photos"><p class="section-kicker">Photos</p><h2>写真で見る街の様子。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と本文でページは利用できます。</div>'}</section>
+          <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>暮らしのポイント。</h2><div class="life-grid">
             ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "生活費", practical.cost], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
           </div></section>
           <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
