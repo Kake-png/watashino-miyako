@@ -579,6 +579,8 @@ const ATLAS_DATA = (() => {
       id: "jr", label: "JR東日本", routes: [
         { id: "jr-keihin-tohoku", label: "京浜東北線", color: "#00a7db" },
         { id: "jr-yamanote", label: "山手線", color: "#80c241" },
+        { id: "jr-chuo-rapid", label: "中央線（快速）", color: "#f15a22", available: false },
+        { id: "jr-chuo-sobu", label: "中央・総武線", color: "#f7d100", available: false },
         { id: "jr-saikyo", label: "埼京線", color: "#00ac9a" },
         { id: "jr-shonan-shinjuku", label: "湘南新宿ライン", color: "#e87524" },
         { id: "jr-tokaido", label: "東海道線", color: "#f68b1e" },

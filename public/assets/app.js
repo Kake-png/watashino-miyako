@@ -125,6 +125,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     const resultCount = document.querySelector("#result-count");
     const featuredGrid = document.querySelector("#featured-grid");
     const matchMode = document.querySelector("#match-mode");
+    const matchModeButtons = document.querySelectorAll("[data-match-mode]");
     const clearFilters = document.querySelector("#clear-filters");
     const themeContext = document.querySelector("#theme-context");
     const featuredTitle = document.querySelector("#featured-title");
@@ -206,6 +207,10 @@ import { ATLAS_DATA } from "/assets/data.js";
         button.dataset.route = route.id;
         button.style.setProperty("--route-color", route.color);
         button.setAttribute("aria-pressed", "false");
+        if (route.available === false) {
+          button.disabled = true;
+          button.title = "掲載駅の追加後に選べます";
+        }
         button.addEventListener("click", () => {
           if (activeRoutes.has(route.id)) activeRoutes.delete(route.id); else activeRoutes.add(route.id);
           button.setAttribute("aria-pressed", String(activeRoutes.has(route.id)));
@@ -314,10 +319,14 @@ import { ATLAS_DATA } from "/assets/data.js";
     searchInput.addEventListener("input", applyFilters);
     rentMax.addEventListener("change", applyFilters);
     routeMatchMode.addEventListener("change", applyFilters);
-    matchMode.addEventListener("change", () => {
-      themeDirty = Boolean(activeTheme);
-      updateThemeContext();
-      applyFilters();
+    matchModeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        matchMode.value = button.dataset.matchMode;
+        matchModeButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
+        themeDirty = Boolean(activeTheme);
+        updateThemeContext();
+        applyFilters();
+      });
     });
     clearFilters.addEventListener("click", () => {
       activeTags.clear();

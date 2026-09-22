@@ -56,7 +56,7 @@ for (const group of routeGroups) {
     if (routeIds.has(route.id)) errors.push(`Duplicate route id: ${route.id}`);
     routeIds.add(route.id);
     if (!route.label || !route.color) errors.push(`${route.id}: missing route label or color`);
-    if (!stations.some((station) => station.routes.includes(route.id))) errors.push(`${route.id}: route has no matching station`);
+    if (route.available !== false && !stations.some((station) => station.routes.includes(route.id))) errors.push(`${route.id}: route has no matching station`);
   }
 }
 
