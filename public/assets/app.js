@@ -1,4 +1,4 @@
-import { ATLAS_DATA } from "/assets/data.js?v=23";
+import { ATLAS_DATA } from "/assets/data.js?v=24";
 
 (() => {
   "use strict";
@@ -106,6 +106,8 @@ import { ATLAS_DATA } from "/assets/data.js?v=23";
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors"
       }).addTo(map);
+      // 背景タイルだけを淡くし、路線・駅ラベルの色と鮮明さは保つ。
+      map.getPane("tilePane").style.filter = "saturate(0.58) brightness(1.12) contrast(0.92)";
       leaflet.control.zoom({ position: "topright" }).addTo(map);
       map.atlasAttributionControl = leaflet.control.attribution({ position: "bottomleft", prefix: false }).addTo(map);
       map.whenReady(() => {
