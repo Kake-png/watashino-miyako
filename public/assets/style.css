@@ -229,6 +229,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   position: relative;
   z-index: 3;
   overflow-y: auto;
+  overflow-anchor: none;
+  scroll-behavior: auto;
   max-height: 88vh;
   background: var(--paper);
   border-right: 1px solid var(--ink);

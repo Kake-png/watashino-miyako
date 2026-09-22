@@ -1,9 +1,9 @@
-import { ATLAS_DATA } from "/assets/data.js?v=19";
+import { ATLAS_DATA } from "/assets/data.js?v=21";
 
 (() => {
   "use strict";
 
-  const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels } = ATLAS_DATA;
+  const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels, routeGeometry } = ATLAS_DATA;
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const routeById = new Map(routeGroups.flatMap((group) => group.routes.map((route) => [route.id, route])));
@@ -123,6 +123,7 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
     const filterList = document.querySelector("#filter-list");
     const searchInput = document.querySelector("#station-search");
     const stationList = document.querySelector("#station-list");
+    const atlasPanel = document.querySelector(".atlas-panel");
     const resultCount = document.querySelector("#result-count");
     const featuredGrid = document.querySelector("#featured-grid");
     const matchMode = document.querySelector("#match-mode");
@@ -141,13 +142,12 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
     const themePathMatch = location.pathname.match(/\/themes\/([^/]+)/);
     const themeId = document.body.dataset.themeId || (themePathMatch && decodeURIComponent(themePathMatch[1])) || new URLSearchParams(location.search).get("theme");
     const activeTheme = themeById.get(themeId) || null;
-    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList || !rentMax || !routeList || !routeMatchMode || !clearRoutes) return;
+    if (!filterList || !searchInput || !stationList || !atlasPanel || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList || !rentMax || !routeList || !routeMatchMode || !clearRoutes) return;
 
     const activeTags = new Set();
     const activeRoutes = new Set();
     const markerEntries = [];
     const routeLineLayers = new Map();
-    let routeGeometry = {};
     const chipByTag = new Map();
     const chipByRoute = new Map();
     const selectedThemes = new Set(activeTheme ? [activeTheme.id] : []);
@@ -258,27 +258,12 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
     const map = await createMap("map");
     if (map) {
       map.atlasAttributionControl?.addAttribution('<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html" target="_blank" rel="noopener">国土数値情報 鉄道データ（2025年度）</a>を加工');
-      map.createPane("route-lines");
-      map.getPane("route-lines").style.zIndex = "360";
-      map.getPane("route-lines").style.pointerEvents = "none";
       stations.forEach((station) => {
         const marker = addStationMarker(map, station, {
           strong: Boolean(activeTheme && themeScore(station) >= 2)
         }).addTo(map);
         markerEntries.push({ station, marker });
       });
-      fetch("/assets/route-geometry.json?v=19")
-        .then((response) => {
-          if (!response.ok) throw new Error(`Route geometry request failed: ${response.status}`);
-          return response.json();
-        })
-        .then((data) => {
-          routeGeometry = data;
-          syncRouteLines();
-        })
-        .catch(() => {
-          routeGeometry = {};
-        });
     }
 
     function syncRouteLines() {
@@ -295,12 +280,12 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
         const route = routeById.get(routeId);
         if (!geometry?.features?.length || !route) return;
         const casing = leaflet.geoJSON(geometry, {
-          pane: "route-lines",
-          style: { pane: "route-lines", color: "#fff", weight: 8, opacity: 0.88, lineCap: "round", lineJoin: "round" }
+          interactive: false,
+          style: { color: "#fff", weight: 8, opacity: 0.88, lineCap: "round", lineJoin: "round" }
         });
         const color = leaflet.geoJSON(geometry, {
-          pane: "route-lines",
-          style: { pane: "route-lines", color: route.color, weight: 4, opacity: 0.92, lineCap: "round", lineJoin: "round" }
+          interactive: false,
+          style: { color: route.color, weight: 4, opacity: 0.92, lineCap: "round", lineJoin: "round" }
         });
         const layer = leaflet.layerGroup([casing, color]).addTo(map);
         routeLineLayers.set(routeId, layer);
@@ -347,6 +332,8 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
     }
 
     function applyFilters() {
+      const previousPanelScroll = atlasPanel.scrollTop;
+      const previousPageScroll = window.scrollY;
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
       syncRouteLines();
@@ -356,11 +343,25 @@ import { ATLAS_DATA } from "/assets/data.js?v=19";
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
+      if (window.matchMedia("(min-width: 721px)").matches) {
+        if (!stationList.dataset.stableHeight) {
+          const firstRow = stationList.querySelector(".station-row");
+          if (firstRow) stationList.dataset.stableHeight = String(Math.ceil(firstRow.getBoundingClientRect().height * stations.length));
+        }
+        if (stationList.dataset.stableHeight) stationList.style.minHeight = `${stationList.dataset.stableHeight}px`;
+      } else {
+        stationList.style.minHeight = "";
+      }
       markerEntries.forEach(({ station, marker }) => {
         if (visible.has(station.slug)) marker.addTo(map);
         else marker.remove();
       });
       document.querySelectorAll("[data-fallback-slug]").forEach((node) => { node.hidden = !visible.has(node.dataset.fallbackSlug); });
+      atlasPanel.scrollTop = previousPanelScroll;
+      window.requestAnimationFrame(() => {
+        atlasPanel.scrollTop = previousPanelScroll;
+        if (window.scrollY !== previousPageScroll) window.scrollTo({ top: previousPageScroll, behavior: "auto" });
+      });
     }
 
     searchInput.addEventListener("input", applyFilters);
