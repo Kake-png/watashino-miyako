@@ -554,30 +554,116 @@ const ATLAS_DATA = (() => {
     yokohama: { cost: "出口・川・幹線道路を越えるかで物件条件が変わる。駅までの実歩分数と管理費を確認。", car: "横浜駅西口出入口など高速アクセスは強いが、渋滞と駐車場費が課題。", outdoors: "港・みなとみらい方面の散歩や夜景へ出やすい。駅直近は人通りが多い。", evening: "飲食・娯楽は豊富。繁華街を通る帰宅路と静かな住宅側を分けて見る。" }
   };
 
-  const tagAdditions = {
-    oimachi: ["central", "shinkansen", "walk", "cycle", "late", "racecourse"], omori: ["expressway", "walk", "river", "cycle", "car"],
-    kamata: ["affordable", "drinks", "late", "river", "cycle", "expressway", "car"], osaki: ["central", "shinkansen", "walk"],
-    gotanda: ["central", "drinks", "late", "river"], musashikoyama: ["walk", "cycle"], togoshiginza: ["walk", "affordable"],
-    nakanobu: ["affordable", "walk"], hatanodai: ["affordable", "walk"], ookayama: ["student", "walk"],
-    jiyugaoka: ["drinks", "walk"], "keikyu-kamata": ["shinkansen", "affordable", "expressway", "car", "cycle"],
-    kawasaki: ["central", "affordable", "drinks", "late", "racecourse", "river", "expressway", "car", "cycle"],
-    musashikosugi: ["central", "river", "walk", "cycle"], yokohama: ["central", "shinkansen", "drinks", "late", "sea", "view", "walk", "expressway", "car"]
+  // 2026-09-22 audit. Tags are rebuilt from explicit criteria rather than
+  // appended to the older editorial labels. rent1k is in ten-thousand yen/month.
+  const stationAudit = {
+    oimachi: { rent1k: 12.01, tags: ["multi", "airport", "shinkansen", "shopping", "street", "library", "large_bookstore", "reuse", "expressway", "late", "drinks", "racecourse"] },
+    omori: { rent1k: 11.54, tags: ["airport", "shinkansen", "shopping", "street", "library", "reuse", "river", "cycle", "sea", "expressway", "late", "drinks", "racecourse"] },
+    kamata: { rent1k: 11.48, tags: ["multi", "airport", "shinkansen", "shopping", "street", "library", "large_bookstore", "reuse", "river", "cycle", "expressway", "late", "drinks", "racecourse"] },
+    osaki: { rent1k: 11.95, tags: ["multi", "airport", "shinkansen", "shopping", "library", "river", "expressway", "late", "drinks"] },
+    gotanda: { rent1k: 12.18, tags: ["multi", "airport", "shinkansen", "shopping", "library", "reuse", "river", "expressway", "late", "drinks"] },
+    musashikoyama: { rent1k: 13.20, tags: ["shinkansen", "shopping", "street", "reuse", "park", "expressway", "late", "drinks"] },
+    togoshiginza: { rent1k: 10.92, tags: ["multi", "airport", "shinkansen", "street", "library", "expressway", "drinks"] },
+    nakanobu: { rent1k: 11.25, tags: ["multi", "airport", "shinkansen", "street", "library", "late", "drinks"] },
+    hatanodai: { rent1k: 10.26, tags: ["multi", "street", "library", "late", "drinks"] },
+    ookayama: { rent1k: 11.90, tags: ["multi", "shinkansen", "street", "library", "reuse", "park", "late", "drinks"] },
+    jiyugaoka: { rent1k: 13.52, tags: ["multi", "shinkansen", "shopping", "street", "library", "large_bookstore", "reuse", "drinks"] },
+    "keikyu-kamata": { rent1k: 10.39, tags: ["multi", "airport", "shinkansen", "shopping", "street", "library", "reuse", "river", "cycle", "expressway", "late", "drinks", "racecourse"] },
+    kawasaki: { rent1k: 9.88, tags: ["multi", "airport", "shinkansen", "shopping", "street", "library", "large_bookstore", "cinema", "reuse", "river", "cycle", "expressway", "late", "drinks", "racecourse"] },
+    musashikosugi: { rent1k: 10.41, tags: ["multi", "airport", "shinkansen", "shopping", "street", "library", "large_bookstore", "cinema", "park", "river", "cycle", "late", "drinks"] },
+    yokohama: { rent1k: 10.47, tags: ["multi", "airport", "shinkansen", "shopping", "large_bookstore", "cinema", "reuse", "park", "river", "sea", "view", "expressway", "late", "drinks", "racecourse"] }
+  };
+
+  const routeGroups = [
+    {
+      id: "jr", label: "JR東日本", routes: [
+        { id: "jr-keihin-tohoku", label: "京浜東北線", color: "#00a7db" },
+        { id: "jr-yamanote", label: "山手線", color: "#80c241" },
+        { id: "jr-saikyo", label: "埼京線", color: "#00ac9a" },
+        { id: "jr-shonan-shinjuku", label: "湘南新宿ライン", color: "#e87524" },
+        { id: "jr-tokaido", label: "東海道線", color: "#f68b1e" },
+        { id: "jr-yokosuka", label: "横須賀線", color: "#007ac3" },
+        { id: "jr-nambu", label: "南武線", color: "#e3b900" }
+      ]
+    },
+    {
+      id: "tokyu", label: "東急電鉄", routes: [
+        { id: "tokyu-oimachi", label: "大井町線", color: "#f18c43" },
+        { id: "tokyu-ikegami", label: "池上線", color: "#ee86a7" },
+        { id: "tokyu-tamagawa", label: "多摩川線", color: "#ae0378" },
+        { id: "tokyu-meguro", label: "目黒線", color: "#009cd2" },
+        { id: "tokyu-toyoko", label: "東横線", color: "#da0442" }
+      ]
+    },
+    {
+      id: "subway-private", label: "地下鉄・私鉄", routes: [
+        { id: "keikyu-main", label: "京急本線", color: "#e60012" },
+        { id: "keikyu-airport", label: "京急空港線", color: "#00a5de" },
+        { id: "toei-asakusa", label: "都営浅草線", color: "#e85298" },
+        { id: "rinkai", label: "りんかい線", color: "#00418e" },
+        { id: "sotetsu-main", label: "相鉄本線", color: "#0067b1" },
+        { id: "yokohama-blue", label: "横浜市営地下鉄ブルーライン", color: "#0075c2" }
+      ]
+    }
+  ];
+
+  const routeLabels = Object.fromEntries(routeGroups.flatMap((group) => group.routes.map((route) => [route.id, route.label])));
+
+  // Separate nearby stations from routes that stop at the named station. Both
+  // are searchable because the atlas treats a ten-minute walk as one station area.
+  const stationRouteAudit = {
+    oimachi: { direct: ["jr-keihin-tohoku", "tokyu-oimachi", "rinkai"] },
+    omori: { direct: ["jr-keihin-tohoku"] },
+    kamata: { direct: ["jr-keihin-tohoku", "tokyu-ikegami", "tokyu-tamagawa"] },
+    osaki: { direct: ["jr-yamanote", "jr-saikyo", "jr-shonan-shinjuku", "rinkai"] },
+    gotanda: { direct: ["jr-yamanote", "toei-asakusa", "tokyu-ikegami"] },
+    musashikoyama: { direct: ["tokyu-meguro"] },
+    togoshiginza: { direct: ["tokyu-ikegami"], nearby: ["toei-asakusa"] },
+    nakanobu: { direct: ["tokyu-oimachi", "toei-asakusa"] },
+    hatanodai: { direct: ["tokyu-oimachi", "tokyu-ikegami"] },
+    ookayama: { direct: ["tokyu-meguro", "tokyu-oimachi"] },
+    jiyugaoka: { direct: ["tokyu-toyoko", "tokyu-oimachi"] },
+    "keikyu-kamata": { direct: ["keikyu-main", "keikyu-airport"] },
+    kawasaki: { direct: ["jr-tokaido", "jr-keihin-tohoku", "jr-nambu"], nearby: ["keikyu-main"] },
+    musashikosugi: { direct: ["jr-yokosuka", "jr-nambu", "jr-shonan-shinjuku", "tokyu-toyoko", "tokyu-meguro"] },
+    yokohama: { direct: ["jr-keihin-tohoku", "jr-tokaido", "jr-yokosuka", "jr-shonan-shinjuku", "tokyu-toyoko", "keikyu-main", "sotetsu-main", "yokohama-blue"] }
   };
 
   const tagLabels = {
-    multi: "複数路線", central: "都心アクセス", airport: "羽田アクセス", shinkansen: "新幹線アクセス",
-    shopping: "駅前で買い物", street: "商店街", books: "本屋・図書館", affordable: "家賃を比べやすい",
-    park: "大きな公園", river: "川・河原", walk: "散歩向き", cycle: "サイクリング向き",
-    sea: "海・港", view: "水辺・夜景", car: "車で出かけやすい", expressway: "高速道路アクセス",
-    quiet: "静かな住宅地", late: "夜遅くまで買い物", drinks: "飲み歩き", student: "大学が近い", racecourse: "競馬場アクセス", night: "夜もにぎわう"
+    multi: "複数路線", airport: "羽田へ直通", shinkansen: "新幹線駅へ直通",
+    shopping: "駅前で買い物が完結", street: "まとまった商店街", library: "図書館", large_bookstore: "大型本屋",
+    cinema: "映画館", reuse: "リユース店", park: "大きな公園", river: "川・河原",
+    cycle: "サイクリングコース", sea: "海・港", view: "水辺の夜景", expressway: "高速入口が近い",
+    late: "深夜の食品買い物", drinks: "飲み歩き", racecourse: "競馬場へ行きやすい"
+  };
+
+  const tagCriteria = {
+    multi: "同じ駅、または徒歩10分以内の別駅から2路線以上を日常的に使える。",
+    airport: "羽田空港まで乗換なしの列車、または直行バスがある。",
+    shinkansen: "品川駅か新横浜駅まで乗換なしの列車がある。",
+    shopping: "駅から徒歩7分以内に、食品・日用品・衣料品を扱う複数の商業施設がある。",
+    street: "徒歩10分以内に、全長300m以上または概ね30店以上のまとまった商店街がある。",
+    library: "一般利用できる公共図書館が徒歩15分以内にある。取次窓口だけは含めない。",
+    large_bookstore: "新刊を幅広く扱う大型書店が徒歩10分以内にある。小型駅売店・専門書店だけは含めない。",
+    cinema: "常設の映画館が徒歩15分以内にある。ホールでの単発上映は含めない。",
+    reuse: "BOOKOFF・HARD OFF等の常設リユース店が徒歩10分以内にある。",
+    park: "面積3ha以上の公園へ徒歩15分以内で着く。",
+    river: "歩ける川沿い・河川敷へ徒歩20分以内、または自転車10分以内で着く。",
+    cycle: "5km以上続く河川敷・海沿い等の走行ルートへ自転車15分以内で着く。",
+    sea: "一般に入れる海辺・港の遊歩道へ徒歩20分以内、または自転車15分以内で着く。",
+    view: "一般に入れる水辺の夜景地点へ徒歩20分以内で着く。",
+    expressway: "通常時に最寄りの高速道路入口まで車で15分以内。",
+    late: "徒歩7分以内に、午前0時以降も食品を買えるスーパー等がある。コンビニだけは含めない。",
+    drinks: "徒歩10分以内、または直通10分以内の近隣駅に、複数店を歩いて選べる飲食・酒場街がある。",
+    racecourse: "大井競馬場または川崎競馬場まで公共交通で30分以内・乗換1回以内。"
   };
 
   const filterGroups = [
-    { id: "transport", label: "交通アクセス", note: "通勤以外の遠出も含める", tags: ["multi", "central", "airport", "shinkansen"] },
-    { id: "daily", label: "買い物・住まい", note: "日常の用事と住む場所の比較", tags: ["shopping", "street", "books", "affordable", "quiet"] },
-    { id: "outdoors", label: "外で過ごす", note: "散歩・サイクリング・水辺", tags: ["park", "river", "walk", "cycle", "sea", "view"] },
-    { id: "mobility", label: "車", note: "車で出かける時の交通", tags: ["car", "expressway"] },
-    { id: "evening", label: "夜・遊び", note: "夜の買い物、飲食、遊び", tags: ["late", "drinks", "night", "student", "racecourse"] }
+    { id: "transport", label: "交通", note: "乗換回数で判定", tags: ["multi", "airport", "shinkansen"] },
+    { id: "facilities", label: "買い物・施設", note: "徒歩圏と施設規模で判定", tags: ["shopping", "street", "library", "large_bookstore", "cinema", "reuse"] },
+    { id: "outdoors", label: "外で過ごす", note: "距離と目的地で判定", tags: ["park", "river", "cycle", "sea", "view"] },
+    { id: "mobility", label: "車", note: "通常時の所要時間", tags: ["expressway"] },
+    { id: "evening", label: "夜・遊び", note: "営業時間と移動時間で判定", tags: ["late", "drinks", "racecourse"] }
   ];
 
   const themePresets = [
@@ -589,17 +675,17 @@ const ATLAS_DATA = (() => {
       description: "羽田・新幹線・高速道路へのアクセスから、旅行へ出る時の起点になる駅を探します。",
       tags: ["airport", "shinkansen", "expressway"],
       matchMode: "any",
-      criteria: ["都心アクセス", "羽田・新幹線・高速道路へのアクセス", "旅行へ出る時の使いやすさ"]
+      criteria: ["羽田への直通", "新幹線駅への直通", "高速入口まで車15分以内"]
     },
     {
       id: "car-life",
       navLabel: "車を使う",
       label: "車を持つ、またはカーシェアを使いたい",
       title: "車を使う人の街探し",
-      description: "駅前の便利さだけでなく、幹線道路や高速道路へ出やすい駅を探します。",
-      tags: ["car", "expressway"],
+      description: "通常時に高速道路入口まで車で15分以内の駅を探します。",
+      tags: ["expressway"],
       matchMode: "any",
-      criteria: ["幹線道路・高速道路へのアクセス", "駅前道路の混雑", "車を使わない日の移動"]
+      criteria: ["高速入口まで通常時15分以内", "駅前道路の混雑は駅ページで確認"]
     },
     {
       id: "strolling",
@@ -607,9 +693,9 @@ const ATLAS_DATA = (() => {
       label: "散歩しやすい場所に住みたい",
       title: "散歩しやすい街を探す",
       description: "公園、川・河原、海・港など、日常の散歩先を見つけやすい駅を探します。",
-      tags: ["walk"],
+      tags: ["park", "river", "sea", "street"],
       matchMode: "any",
-      criteria: ["日常の散歩先", "歩きやすい道", "公園・水辺への行きやすさ"]
+      criteria: ["3ha以上の公園", "歩ける川・河原", "海・港", "300m以上の商店街"]
     },
     {
       id: "cycling",
@@ -619,39 +705,44 @@ const ATLAS_DATA = (() => {
       description: "河川敷や海側へ出やすく、休日に自転車で走りやすい駅を探します。",
       tags: ["cycle"],
       matchMode: "any",
-      criteria: ["走りやすい道", "河川敷・海側へのアクセス", "休日の自転車移動"]
+      criteria: ["5km以上続く走行ルート", "ルート入口まで自転車15分以内"]
     },
     {
       id: "books",
-      navLabel: "本屋・図書館",
-      label: "本屋や図書館の近くに住みたい",
-      title: "本屋・図書館の近くで暮らす街を探す",
-      description: "本屋、図書館、古書店などに日常的に立ち寄りやすい駅を探します。",
-      tags: ["books"],
+      navLabel: "本を探す",
+      label: "本屋や図書館に立ち寄りたい",
+      title: "本を探しやすい街を探す",
+      description: "図書館、大型本屋、リユース店のいずれかに日常的に立ち寄れる駅を探します。",
+      tags: ["library", "large_bookstore", "reuse"],
       matchMode: "any",
-      criteria: ["本屋・図書館への行きやすさ", "帰宅途中に立ち寄れるか", "周辺の本の店も含めた選択肢"]
+      criteria: ["図書館は徒歩15分以内", "大型本屋・リユース店は徒歩10分以内"]
     },
     {
       id: "drinking",
       navLabel: "飲み歩き",
       label: "駅の近くで飲み歩きたい",
       title: "飲み歩きやすい街を探す",
-      description: "駅の近くに飲食店や酒場が集まり、店を選びながら歩ける駅を探します。",
+      description: "駅の徒歩圏に加え、直通10分以内の近隣駅に酒場街がある場合も含めます。",
       tags: ["drinks"],
       matchMode: "any",
-      criteria: ["駅近くの飲食店の多さ", "店を選びながら歩けること", "終電後ではなく夜の外出のしやすさ"]
+      criteria: ["徒歩10分以内の酒場街", "または直通10分以内の近隣駅に酒場街"]
     }
   ];
 
   const enrichedStations = stations.map((station) => ({
     ...station,
     ...(stationProfiles[station.slug] || {}),
-    tags: [...new Set([...station.tags, ...(tagAdditions[station.slug] || [])])].filter((tag) => tag !== "bike" && tag !== "family"),
+    tags: stationAudit[station.slug].tags,
+    rent1k: stationAudit[station.slug].rent1k,
+    directRoutes: stationRouteAudit[station.slug].direct,
+    nearbyRoutes: stationRouteAudit[station.slug].nearby || [],
+    routes: [...stationRouteAudit[station.slug].direct, ...(stationRouteAudit[station.slug].nearby || [])],
+    rentSource: "LIFULL HOME'S・駅徒歩10分以内・管理費等を除く・2026年9月22日確認",
     practical: practicalNotes[station.slug],
-    editorialStatus: "試作調査・2026年9月"
+    editorialStatus: "条件再監査・2026年9月22日"
   }));
 
-  return { stations: enrichedStations, sources, tagLabels, filterGroups, themePresets };
+  return { stations: enrichedStations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels };
 })();
 
 export { ATLAS_DATA };

@@ -3,7 +3,7 @@ import { ATLAS_DATA } from "/assets/data.js";
 (() => {
   "use strict";
 
-  const { stations, sources, tagLabels, filterGroups, themePresets } = ATLAS_DATA;
+  const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, routeGroups, routeLabels } = ATLAS_DATA;
   const stationBySlug = new Map(stations.map((station) => [station.slug, station]));
   const themeById = new Map(themePresets.map((theme) => [theme.id, theme]));
   const compareKey = "ekimachi-compare-v1";
@@ -130,14 +130,22 @@ import { ATLAS_DATA } from "/assets/data.js";
     const featuredTitle = document.querySelector("#featured-title");
     const perspectiveList = document.querySelector("#perspective-list");
     const activeFilterCount = document.querySelector("#active-filter-count");
+    const rentMax = document.querySelector("#rent-max");
+    const criteriaList = document.querySelector("#criteria-list");
+    const routeList = document.querySelector("#route-list");
+    const routeMatchMode = document.querySelector("#route-match-mode");
+    const clearRoutes = document.querySelector("#clear-routes");
+    const activeRouteCount = document.querySelector("#active-route-count");
     const themePathMatch = location.pathname.match(/\/themes\/([^/]+)/);
     const themeId = document.body.dataset.themeId || (themePathMatch && decodeURIComponent(themePathMatch[1])) || new URLSearchParams(location.search).get("theme");
     const activeTheme = themeById.get(themeId) || null;
-    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList) return;
+    if (!filterList || !searchInput || !stationList || !resultCount || !featuredGrid || !matchMode || !clearFilters || !themeContext || !perspectiveList || !rentMax || !routeList || !routeMatchMode || !clearRoutes) return;
 
     const activeTags = new Set();
+    const activeRoutes = new Set();
     const markerEntries = [];
     const chipByTag = new Map();
+    const chipByRoute = new Map();
     const selectedThemes = new Set(activeTheme ? [activeTheme.id] : []);
     let themeDirty = false;
 
@@ -167,6 +175,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         button.type = "button";
         button.className = "filter-chip";
         button.textContent = tagLabels[key];
+        button.title = tagCriteria[key] || "";
         button.dataset.tag = key;
         button.setAttribute("aria-pressed", "false");
         options.append(button);
@@ -182,7 +191,34 @@ import { ATLAS_DATA } from "/assets/data.js";
       filterList.append(section);
     });
 
+    if (criteriaList) criteriaList.innerHTML = filterGroups.flatMap((group) => group.tags).map((key) => `<div><dt>${escapeHtml(tagLabels[key])}</dt><dd>${escapeHtml(tagCriteria[key])}</dd></div>`).join("");
+
+    routeGroups.forEach((group) => {
+      const section = document.createElement("section");
+      section.className = "route-group";
+      section.innerHTML = `<h4>${escapeHtml(group.label)}</h4><div class="route-group-options"></div>`;
+      const options = section.querySelector(".route-group-options");
+      group.routes.forEach((route) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "route-chip";
+        button.textContent = route.label;
+        button.dataset.route = route.id;
+        button.style.setProperty("--route-color", route.color);
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+          if (activeRoutes.has(route.id)) activeRoutes.delete(route.id); else activeRoutes.add(route.id);
+          button.setAttribute("aria-pressed", String(activeRoutes.has(route.id)));
+          applyFilters();
+        });
+        options.append(button);
+        chipByRoute.set(route.id, button);
+      });
+      routeList.append(section);
+    });
+
     matchMode.value = "all";
+    routeMatchMode.value = "any";
     updateThemeContext();
 
     function syncPerspectives() {
@@ -221,9 +257,13 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
 
     function rowHtml(station, index) {
+      const nearbySelected = [...activeRoutes].filter((route) => station.nearbyRoutes.includes(route));
+      const nearbyNote = nearbySelected.length
+        ? `<small class="nearby-route-note">近隣駅：${nearbySelected.map((route) => escapeHtml(routeLabels[route])).join("・")}</small>`
+        : "";
       return `<a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
         <span class="row-code">${String(index + 1).padStart(2, "0")}</span>
-        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p></span>
+        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}</span>
         <span class="row-status" aria-hidden="true">→</span>
       </a>`;
     }
@@ -231,17 +271,23 @@ import { ATLAS_DATA } from "/assets/data.js";
     function currentMatches() {
       const query = searchInput.value.trim().toLocaleLowerCase("ja");
       const selectedTags = [...activeTags];
+      const selectedRoutes = [...activeRoutes];
+      const maximumRent = Number(rentMax.value) || null;
       const selectedThemeObjects = [...selectedThemes].map((id) => themeById.get(id)).filter(Boolean);
       const matches = stations.filter((station) => {
-        const text = [station.name, station.kana, station.area, ...station.lines].join(" ").toLocaleLowerCase("ja");
+        const text = [station.name, station.kana, station.area, ...station.lines, ...station.routes.map((route) => routeLabels[route])].join(" ").toLocaleLowerCase("ja");
         const textMatches = !query || text.includes(query);
         const tagsMatch = selectedTags.length === 0 || (matchMode.value === "any"
           ? selectedTags.some((tag) => station.tags.includes(tag))
           : selectedTags.every((tag) => station.tags.includes(tag)));
-      const themesMatch = selectedThemeObjects.every((theme) => (theme.matchMode === "all"
-        ? theme.tags.every((tag) => station.tags.includes(tag))
-        : theme.tags.some((tag) => station.tags.includes(tag))));
-        return textMatches && tagsMatch && themesMatch;
+        const rentMatches = maximumRent === null || station.rent1k <= maximumRent;
+        const routesMatch = selectedRoutes.length === 0 || (routeMatchMode.value === "all"
+          ? selectedRoutes.every((route) => station.routes.includes(route))
+          : selectedRoutes.some((route) => station.routes.includes(route)));
+        const themesMatch = selectedThemeObjects.every((theme) => (theme.matchMode === "all"
+          ? theme.tags.every((tag) => station.tags.includes(tag))
+          : theme.tags.some((tag) => station.tags.includes(tag))));
+        return textMatches && tagsMatch && themesMatch && rentMatches && routesMatch;
       });
       if (selectedTags.length && matchMode.value === "any") {
         matches.sort((a, b) => themeScore(b, selectedTags) - themeScore(a, selectedTags));
@@ -253,7 +299,8 @@ import { ATLAS_DATA } from "/assets/data.js";
       const matches = currentMatches();
       const visible = new Set(matches.map((station) => station.slug));
       resultCount.textContent = `${matches.length}駅`;
-      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size}件選択`;
+      if (activeFilterCount) activeFilterCount.textContent = `${activeTags.size + selectedThemes.size + Number(Boolean(rentMax.value))}件選択`;
+      if (activeRouteCount) activeRouteCount.textContent = activeRoutes.size ? `${activeRoutes.size}路線を選択` : "選択なし";
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">該当する駅がありません。条件を一つ外してみてください。</p>';
@@ -265,6 +312,8 @@ import { ATLAS_DATA } from "/assets/data.js";
     }
 
     searchInput.addEventListener("input", applyFilters);
+    rentMax.addEventListener("change", applyFilters);
+    routeMatchMode.addEventListener("change", applyFilters);
     matchMode.addEventListener("change", () => {
       themeDirty = Boolean(activeTheme);
       updateThemeContext();
@@ -273,9 +322,15 @@ import { ATLAS_DATA } from "/assets/data.js";
     clearFilters.addEventListener("click", () => {
       activeTags.clear();
       selectedThemes.clear();
+      rentMax.value = "";
       chipByTag.forEach((button) => button.setAttribute("aria-pressed", "false"));
       themeDirty = Boolean(activeTheme);
       updateThemeContext();
+      applyFilters();
+    });
+    clearRoutes.addEventListener("click", () => {
+      activeRoutes.clear();
+      chipByRoute.forEach((button) => button.setAttribute("aria-pressed", "false"));
       applyFilters();
     });
     applyFilters();
@@ -360,6 +415,7 @@ import { ATLAS_DATA } from "/assets/data.js";
     const photos = station.images || [];
     const leadPhoto = sources[photos[0]];
     const practical = station.practical || {};
+    const rentCopy = `1K平均 ${station.rent1k.toFixed(2)}万円（駅徒歩10分以内・管理費等を除く、2026年9月22日確認）。${practical.cost}`;
     const stationThemes = themePresets
       .map((theme) => ({ theme, score: theme.tags.filter((tag) => station.tags.includes(tag)).length }))
       .filter(({ score }) => score > 0)
@@ -386,7 +442,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         </figure>
       </section>
       <section class="station-facts" aria-label="暮らしの要点">
-        <div><small>生活費</small><p>${escapeHtml(practical.cost)}</p></div>
+        <div><small>1K家賃目安</small><p>${escapeHtml(rentCopy)}</p></div>
         <div><small>車と道路</small><p>${escapeHtml(practical.car)}</p></div>
         <div><small>散歩・自転車</small><p>${escapeHtml(practical.outdoors)}</p></div>
       </section>
@@ -400,7 +456,7 @@ import { ATLAS_DATA } from "/assets/data.js";
           <section class="content-section" id="station-map-section"><p class="section-kicker">Map</p><h2>駅周辺を地図で確認。</h2><div class="content-map"><div class="mini-map" id="station-map" aria-label="${escapeHtml(station.name)}駅周辺の地図"></div><div class="map-fallback" id="station-map-fallback">地図を読み込めませんでした。写真と本文はそのまま利用できます。</div><span class="station-map-note">中心は駅。住む場所を選ぶ時は、出口・線路・幹線道路まで確認を。</span></div></section>
           <section class="content-section" id="photos"><p class="section-kicker">Photos</p><h2>写真で見る街の様子。</h2>${photos.length ? `<div class="photo-walk">${photos.map(renderPhoto).join("")}</div>` : '<div class="photo-empty"><strong>写真は準備中です。</strong><br>権利条件と撮影地点を確認できた写真だけを追加します。写真がなくても、地図と本文でページは利用できます。</div>'}</section>
           <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>暮らしのポイント。</h2><div class="life-grid">
-            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "生活費", practical.cost], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
+            ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "1K家賃目安", rentCopy], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
           </div></section>
           <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
         </article>
@@ -457,7 +513,7 @@ import { ATLAS_DATA } from "/assets/data.js";
         ["街の概要", (station) => `<p>${escapeHtml(station.descriptor)}</p>`],
         ["向いている暮らし", (station) => `<ul>${defaultsFor(station).strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
         ["住む前に確認", (station) => `<ul>${defaultsFor(station).cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`],
-        ["家賃の見方", (station) => `<p>${escapeHtml(station.practical.cost)}</p>`],
+        ["1K家賃目安", (station) => `<p><strong>${station.rent1k.toFixed(2)}万円</strong></p><small>${escapeHtml(station.rentSource)}</small>`],
         ["車・高速道路", (station) => `<p>${escapeHtml(station.practical.car)}</p>`],
         ["散歩・自転車", (station) => `<p>${escapeHtml(station.practical.outdoors)}</p>`],
         ["夜の帰宅", (station) => `<p>${escapeHtml(station.practical.evening)}</p>`],
