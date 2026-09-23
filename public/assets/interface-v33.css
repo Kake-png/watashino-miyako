@@ -352,38 +352,73 @@ body {
 }
 .search-first .filter-chip[aria-pressed="true"] { background: var(--green); color: white; }
 
-/* 大区分は細いが見失わない罫線と、本文より濃い見出し面で判別する。 */
+/* 左の操作欄は色面ではなく、白地・余白・見出しのレールで階層を作る。 */
+.search-first .panel-head,
 .search-first .perspectives {
-  border-bottom: 1px solid #787b76;
-  background: #f7f3eb;
+  background: #fff;
+  border-bottom: 1px solid #c9cfca;
 }
 .search-first .route-drawer,
 .search-first .condition-drawer {
   border-top: 0;
-  border-bottom: 1px solid #787b76;
+  border-bottom: 1px solid #c9cfca;
   background: #fff;
 }
 .search-first .route-drawer { border-bottom: 0; }
 .search-first .route-drawer > summary,
 .search-first .condition-drawer > summary {
-  background: #cdd0cc;
+  position: relative;
+  min-height: 50px;
+  padding: 13px 22px 13px 26px;
+  background: #fff;
   color: var(--ink);
   font-size: 15px;
   font-weight: 750;
 }
+.search-first .route-drawer > summary::after,
+.search-first .condition-drawer > summary::after {
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: 0;
+  width: 3px;
+  background: #52605a;
+  content: "";
+}
 .search-first .route-drawer > summary::before,
 .search-first .condition-drawer > summary::before { color: #58635e; }
+.search-first .route-drawer > summary span,
+.search-first .condition-drawer > summary span {
+  padding: 2px 7px;
+  border: 1px solid #bdc5bf;
+  border-radius: 999px;
+  color: #4d5c55;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
 .search-first .route-drawer[open] > summary,
 .search-first .condition-drawer[open] > summary {
-  border-bottom: 1px solid #91968f;
+  border-bottom: 1px solid #d8ddd9;
+}
+.search-first .condition-drawer > summary { margin-top: 7px; }
+.search-first .condition-match {
+  margin-top: 4px;
+  border-color: #cbd2cd;
+  background: #fff;
 }
 .search-first .result-summary {
-  border-top: 1px solid #787b76;
-  border-bottom: 1px solid #787b76;
-  background: #cdd0cc;
+  min-height: 48px;
+  padding-inline: 22px;
+  border-top: 1px solid #87928b;
+  border-bottom: 1px solid #c9cfca;
+  background: #fff;
   color: var(--ink);
 }
-.search-first .result-summary strong { color: var(--ink); }
+.search-first .result-summary strong {
+  color: var(--ink);
+  font-size: 18px;
+}
 
 @media (max-width: 1100px) {
   .site-nav a { padding-inline: 12px; }
