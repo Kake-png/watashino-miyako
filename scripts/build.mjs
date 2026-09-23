@@ -8,7 +8,7 @@ const source = path.join(root, "node_modules", "leaflet", "dist");
 const destination = path.join(root, "public", "vendor");
 
 // 上書き展開された古い配布物が公開対象に残らないよう、廃止済みアセットを除去する。
-for (const staleAsset of ["assets/revision.css", "assets/interface-v31.css", "assets/interface-v32.css"]) {
+for (const staleAsset of ["assets/revision.css", "assets/interface-v31.css", "assets/interface-v32.css", "assets/interface-v33.css"]) {
   fs.rmSync(path.join(root, "public", staleAsset), { force: true });
 }
 
