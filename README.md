@@ -36,21 +36,22 @@ python3 -m http.server 4173 --directory public
 
 ブラウザで `http://localhost:4173/` を開きます。比較ページは `/compare/`、駅詳細は `/station/oimachi/` のように、ローカルとCloudflareで同じURLを使えます。
 
-## Cloudflare Pagesへ公開
+## Cloudflare Workersへ公開
 
-公開ディレクトリは `public` です。Git連携では次の設定を使います。
+このリポジトリは、`wrangler.jsonc` の Static Assets 設定によって `public` を配信します。Git連携では次の設定を使います。
 
 - ビルドコマンド: `npm ci && npm run build`
-- 出力ディレクトリ: `public`
+- デプロイコマンド: `npx wrangler deploy`
+- ルートディレクトリ: `/`
 - Node.js: 20以上
 
-試しに直接アップロードする場合は、Cloudflare Dashboardの Workers & Pages から `public` フォルダまたはその中身をまとめたZIPをアップロードできます。Wranglerなら次のコマンドです。
+手元から同じ設定で公開する場合は、次のコマンドを使います。
 
 ```bash
 npm run deploy
 ```
 
-Cloudflareの現行仕様では、Direct Uploadで作ったPagesプロジェクトは後からGit integrationへ切り替えられません。継続運用する本番プロジェクトは、先にGit管理を始めてGit integrationで作る方が安全です。
+公開後に `/deployment-version.txt` を開き、ZIPに記載されたバージョンが表示されれば、新しい静的アセットまで反映されています。
 
 駅ページはビルド時に実体のあるHTMLとして生成します。`public/_headers` が基本的なセキュリティヘッダーと画像キャッシュを設定します。
 

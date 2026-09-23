@@ -11,7 +11,7 @@
     "check": "node scripts/validate.mjs",
     "routes:display": "node scripts/build-route-display-geometry.mjs && node scripts/embed-route-geometry.mjs",
     "photos:fetch": "node scripts/fetch-commons-photos.mjs",
-    "deploy": "npx wrangler pages deploy public"
+    "deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

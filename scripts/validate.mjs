@@ -10,6 +10,12 @@ const { stations, sources, tagLabels, tagCriteria, filterGroups, themePresets, r
 const errors = [];
 const slugs = new Set();
 
+const wrangler = JSON.parse(fs.readFileSync(path.join(projectRoot, "wrangler.jsonc"), "utf8"));
+if (wrangler.name !== "watashino-miyako") errors.push("Wrangler targets the wrong Worker name");
+if (wrangler.assets?.directory !== "./public") errors.push("Wrangler must deploy ./public as static assets");
+if (wrangler.main) errors.push("Static-only Worker must not define a main script");
+if (wrangler.assets?.binding) errors.push("Static-only Worker must not define an assets binding");
+
 for (const station of stations) {
   if (slugs.has(station.slug)) errors.push(`Duplicate station slug: ${station.slug}`);
   slugs.add(station.slug);
@@ -74,20 +80,25 @@ for (const theme of themePresets) {
   if (!fs.existsSync(path.join(publicRoot, "themes", theme.id, "index.html"))) errors.push(`${theme.id}: missing physical theme page`);
 }
 
-for (const file of ["index.html", "compare/index.html", "about/index.html", "privacy/index.html", "site-policy/index.html", "_headers", "assets/revision.css", "vendor/leaflet.js", "vendor/leaflet.css"]) {
+for (const file of ["index.html", "compare/index.html", "about/index.html", "privacy/index.html", "site-policy/index.html", "deployment-version.txt", "_headers", "assets/revision.css", "vendor/leaflet.js", "vendor/leaflet.css"]) {
   if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing publish asset: ${file}`);
 }
 
 const indexHtml = fs.readFileSync(path.join(publicRoot, "index.html"), "utf8");
 const appSource = fs.readFileSync(path.join(publicRoot, "assets", "app.js"), "utf8");
+const revisionCss = fs.readFileSync(path.join(publicRoot, "assets", "revision.css"), "utf8");
+const cssBraceBalance = [...revisionCss].reduce((balance, character) => balance + (character === "{" ? 1 : character === "}" ? -1 : 0), 0);
+if (cssBraceBalance !== 0) errors.push(`Revision CSS has unbalanced braces: ${cssBraceBalance}`);
+if (!revisionCss.includes(".search-first .route-drawer { border-bottom: 0; }")) errors.push("Route/condition separator removal is missing");
+if (!revisionCss.includes("background: #cdd0cc;")) errors.push("Updated section header background is missing");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=30"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=31"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");
 if (!indexHtml.includes('id="route-match-mode"')) errors.push("Home is missing the route match mode");
-if (!appSource.includes('from "/assets/data.js?v=30"')) errors.push("App is missing the versioned data module import");
+if (!appSource.includes('from "/assets/data.js?v=31"')) errors.push("App is missing the versioned data module import");
 if (!appSource.includes('map.getPane("tilePane").style.filter')) errors.push("Map is missing the light tile treatment");
 if (!appSource.includes('leaflet.LineUtil.simplify')) errors.push("Route display is missing low-zoom simplification");
 if (!appSource.includes('index < points.length')) errors.push("Offset route loop must use simplified point count");
