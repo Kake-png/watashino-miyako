@@ -7,6 +7,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const source = path.join(root, "node_modules", "leaflet", "dist");
 const destination = path.join(root, "public", "vendor");
 
+// 上書き展開された古い配布物が公開対象に残らないよう、廃止済みアセットを除去する。
+for (const staleAsset of ["assets/revision.css", "assets/interface-v31.css"]) {
+  fs.rmSync(path.join(root, "public", staleAsset), { force: true });
+}
+
 fs.mkdirSync(destination, { recursive: true });
 for (const file of ["maplibre-gl.mjs", "maplibre-gl.js", "maplibre-gl-csp.js", "maplibre-gl-csp-worker.js", "maplibre-gl.css"]) {
   fs.rmSync(path.join(destination, file), { force: true });
