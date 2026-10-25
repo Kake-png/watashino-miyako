@@ -1,0 +1,48 @@
+{
+  "columns": [
+    "record_id",
+    "station_slug",
+    "station_name",
+    "condition_id",
+    "condition_label",
+    "research_status",
+    "research_judgment",
+    "target_name",
+    "measurements",
+    "method_and_route",
+    "source_urls",
+    "source_publisher",
+    "source_updated_at",
+    "research_checked_at",
+    "researcher",
+    "negative_search_scope",
+    "unresolved_points"
+  ],
+  "conditions": [
+    "multi",
+    "airport",
+    "shinkansen",
+    "shopping",
+    "street",
+    "library",
+    "large_bookstore",
+    "cinema",
+    "reuse",
+    "park",
+    "river",
+    "cycle",
+    "sea",
+    "view",
+    "expressway",
+    "late",
+    "drinks",
+    "racecourse"
+  ],
+  "judgments": [
+    "該当",
+    "非該当",
+    "未確認"
+  ],
+  "status": "調査済み",
+  "eligibility": "該当だけ採用。非該当は調査範囲でなし、未確認は根拠不足で不採用。"
+}

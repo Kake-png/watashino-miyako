@@ -10,6 +10,12 @@
 /assets/*
   Cache-Control: no-cache, must-revalidate
 
+/deployment-version.txt
+  Cache-Control: no-store
+
+/release.json
+  Cache-Control: no-store
+
 /vendor/*.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=604800, immutable

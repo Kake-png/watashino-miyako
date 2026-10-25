@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#183f39">
-  <title>この図譜について・写真の出典｜駅まち図譜（仮）</title>
+  <title>この図譜について・写真の出典｜街えらび案内所</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/style.css?v=34">
+  <link rel="stylesheet" href="/assets/style.css?v=40">
   <link rel="stylesheet" href="/assets/interface-v34.css">
   <script src="/vendor/leaflet.js?v=1.9.4"></script>
-  <script type="module" src="/assets/app.js?v=34"></script>
+  <script type="module" src="/assets/app.js?v=40"></script>
 </head>
 <body data-page="credits">
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
-    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">図</span><span><strong>駅まち図譜 <i>仮</i></strong><small>街から選ぶ、住む場所</small></span></a>
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">図</span><span><strong>街えらび案内所</strong><small>街から選ぶ、住む場所</small></span></a>
     <span></span>
     <nav class="site-nav" id="site-nav" aria-label="主要メニュー">
       <a href="/#atlas">求める生活</a>
@@ -27,23 +27,29 @@
   <main class="page" id="main">
     <header class="page-title">
       <p class="kicker">Editorial policy &amp; credits</p>
-      <h1>この図譜の読み方。</h1>
-      <p>物件広告ではなく、住む場所を決める前に街の違いを読むための試作版です。名称も現在は仮称です。</p>
+      <h1>このサイトについて</h1>
+      <p>物件を探す前に、住む駅の候補を絞るためのサイトです。南東京〜横浜の15駅を掲載しています。</p>
     </header>
     <article class="prose">
-      <h2>順位ではなく、交換条件を書く</h2>
+      <h2>総合順位をつけない理由</h2>
       <p>「住みやすさ82点」のような総合点は使いません。交通が強い代わりに駅前が混みやすい、商店街が長い代わりに住む位置で駅までの経路が変わる、といった違いを記述します。</p>
       <p>住居費、車、治安、防災などは、駅名ひとつで断定できません。試作版の記述は候補を見つける入口とし、契約前には現地・自治体・交通事業者などの公式情報で確認してください。</p>
       <h2>写真について</h2>
       <p>写真はWikimedia Commonsで公開され、商用サイトでの再利用条件を確認できたものを使用しています。各写真の作者、撮影時期、ライセンス、元ページ、トリミング等の変更内容を表示します。写真は街全体を代表する評価ではなく、駅前・商店街・普通の道などの一断面です。</p>
       <h2>地図について</h2>
-      <p>地図表示にはMapLibre GL JSとOpenFreeMapの公開スタイルを使っています。地図は候補駅の位置関係を読むためのもので、徒歩経路、災害リスク、行政境界などの最終確認には各公式情報を利用してください。</p>
+      <p>地図表示はLeafletとOpenStreetMapの標準タイルを使っています。鉄道の線形は国土交通省「国土数値情報 鉄道データ（2025年度）」を加工しています。並行路線を区別するための表示上のずらしがあり、正確な線路位置や運行範囲を保証するものではありません。</p>
+      <p><a href="https://www.openstreetmap.org/copyright">OpenStreetMapの著作権・利用条件</a> · <a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a></p>
+      <h2>情報の作り方と確認状況</h2>
+      <p>施設や交通の公式資料をもとに、共通の条件で候補を整理します。確認した事実には出典と確認日を付けます。本文は編集要約であり、全駅を現地取材した記録ではありません。未検証の営業時間・移動時間・家賃などは確認済みとして扱いません。</p>
+      <p><a href="/criteria/">条件の判定基準</a>、各駅の「条件に合う理由・出典」で、確認済みと再確認待ちを分けています。</p>
+      <h2>運営について</h2>
+      <p>個人制作・運営のサイトです。現在はアカウント、ユーザー投稿、アクセス解析、広告、アフィリエイトリンクを設けていません。運営者名・連絡先の公開は未整備です。誤りの訂正窓口を公開することが、正式公開前の残作業です。</p>
       <h2>写真の出典一覧</h2>
       <div id="credit-list"></div>
     </article>
   </main>
   <footer class="site-footer">
-    <div><strong>駅まち図譜（仮）</strong><p>写真の権利条件を記録し、街の説明と出典を分けて管理します。</p></div>
+    <div><strong>街えらび案内所</strong><p>写真の権利条件を記録し、街の説明と出典を分けて管理します。</p></div>
     <div class="footer-links"><a href="/#atlas">地図へ戻る</a><a href="/compare/">駅を比較する</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a></div>
   </footer>
 </body>

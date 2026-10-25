@@ -1,4 +1,4 @@
-/* 2026-09 redesign: dense working surface, warmer atlas palette */
+/* Historical base rules; the calm hierarchy overrides follow below. */
 :root {
   --paper: #f6f1e7;
   --paper-2: #e9e0cf;
@@ -17,6 +17,45 @@
 }
 
 html { font-size: 16px; }
+.directory-page { max-width: 1120px; margin-inline: auto; padding: 26px clamp(18px, 4vw, 44px) 48px; }
+.directory-title { margin-block: 20px 26px; }
+.directory-title h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.35; }
+.directory-title p { max-width: 70ch; margin-top: 10px; }
+.entry-links { display: flex; flex-wrap: wrap; gap: 10px 24px; padding: 16px 22px; border-bottom: 1px solid var(--rule); background: #fff; }
+.entry-links a, .evidence-section a, .directory-page a { color: var(--green); text-underline-offset: 4px; }
+.entry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; }
+.entry-grid > a { display: block; padding: 18px 0; border-top: 2px solid var(--rule); text-decoration: none; }
+.entry-grid h2 { margin: 0 0 8px; font-size: 22px; }
+.entry-grid p { color: var(--ink); margin-bottom: 10px; }
+.entry-grid span { font-size: 15px; font-weight: 650; }
+.directory-list { list-style: none; padding: 0; margin: 18px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 26px; }
+.directory-list li { border-bottom: 1px solid var(--rule); }
+.directory-list a { display: block; padding: 12px 0; text-decoration: none; }
+.directory-list strong { display: block; font-size: 18px; }
+.directory-list span { display: block; color: var(--muted); font-size: 15px; margin-top: 4px; }
+.route-directory { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 22px; }
+.route-directory a { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule); text-decoration: none; }
+.route-directory small { margin-left: auto; color: var(--muted); }
+.route-swatch { width: 10px; height: 16px; background: var(--route-color); flex: 0 0 auto; }
+.evidence-list { margin: 16px 0; }
+.evidence-list > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; border-top: 1px solid var(--rule); padding: 14px 0; }
+.evidence-list dt { font-weight: 700; }
+.evidence-list dt small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 5px; }
+.evidence-list dd { margin: 0; }
+.evidence-list dd p { margin: 0 0 8px; }
+.pending-evidence { border-block: 1px solid var(--rule); padding: 10px 0; }
+.pending-evidence summary { cursor: pointer; font-weight: 650; }
+.pending-evidence p { margin-top: 10px; }
+.data-note { font-size: 14px; color: var(--muted); margin-top: 18px; }
+.entry-grid a:hover, .directory-list a:hover, .route-directory a:hover { text-decoration: underline; }
+:focus-visible { outline: 3px solid #35685d; outline-offset: 3px; }
+@media (max-width: 720px) {
+  .entry-grid, .directory-list, .route-directory { grid-template-columns: 1fr; }
+  .evidence-list > div { grid-template-columns: 1fr; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
 body {
   background: var(--paper);
   color: var(--ink);
@@ -516,6 +555,40 @@ body,
 .station-map-note { background: rgb(255 255 255 / 92%); }
 .leaflet-control-attribution { background: rgb(255 255 255 / 88%) !important; }
 
+/* 検索エンジンとJS無効時にも読める、駅ページの静的概要。JS起動後は通常の駅画面に置き換わる。 */
+.static-seo-content,
+.theme-static-copy {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px clamp(20px, 4vw, 56px);
+  background: #fff;
+  color: var(--ink);
+}
+.static-seo-content h1,
+.theme-static-copy h1 { margin: 6px 0 10px; font-size: clamp(1.8rem, 3vw, 2.8rem); }
+.static-seo-content h2 { margin: 24px 0 8px; font-size: 1.2rem; border-left: 3px solid var(--green); padding-left: 10px; }
+.static-seo-content p,
+.static-seo-content li,
+.theme-static-copy p { line-height: 1.8; }
+.static-seo-content ul { margin: 0; padding-left: 1.4em; }
+.static-seo-lead { max-width: 70ch; font-size: 1.05rem; }
+.static-seo-meta,
+.static-seo-note { color: var(--muted); font-size: .9rem; }
+.static-seo-content dl { margin: 0; border-top: 1px solid var(--rule); }
+.static-seo-content dl > div { display: grid; grid-template-columns: 7rem 1fr; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.static-seo-content dt { font-weight: 700; }
+.static-seo-content dd { margin: 0; }
+.static-seo-links { margin-top: 22px; }
+.static-seo-links a,
+.theme-static-links a { display: inline-block; margin: 4px 8px 4px 0; color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+.theme-static-copy { border-bottom: 1px solid var(--rule); }
+.theme-static-copy + .quick-note { margin-top: 0; }
+@media (max-width: 720px) {
+  .static-seo-content,
+  .theme-static-copy { padding: 22px 18px; }
+  .static-seo-content dl > div { grid-template-columns: 1fr; gap: 2px; }
+}
+
 @media (max-width: 1100px) {
   .site-nav a { padding-inline: 12px; }
   .search-first .atlas-layout { grid-template-columns: 410px minmax(0, 1fr); }
@@ -552,3 +625,27 @@ body,
   .station-body { grid-template-columns: 1fr; }
   .station-index { display: none; }
 }
+
+/* v38: evidence and audit status use the existing neutral palette. */
+.verification-note { min-height: 3.2em; margin: 0; padding: 8px 16px; font-size: 14px; line-height: 1.6; color: var(--muted, #52606b); border-bottom: 1px solid var(--rule, #d3dae0); }
+.filter-chip.is-under-review small { display: inline-block; margin-left: 5px; font-size: 12px; font-weight: 400; }
+.pending-evidence { margin-block: 12px; padding: 12px 14px; border: 1px solid var(--rule, #d3dae0); border-radius: 4px; }
+.pending-evidence summary { font-weight: 600; cursor: pointer; }
+.pending-evidence dt { font-weight: 600; }
+.pending-evidence dd { margin: 4px 0 14px; }
+.audit-table-wrap { overflow: auto; max-height: 72vh; border: 1px solid var(--rule, #d3dae0); margin-block: 20px; }
+.audit-table { border-collapse: separate; border-spacing: 0; min-width: 1800px; width: 100%; font-size: 15px; }
+.audit-table th, .audit-table td { padding: 12px 14px; border-bottom: 1px solid var(--rule, #d3dae0); border-right: 1px solid var(--rule, #d3dae0); text-align: center; white-space: nowrap; }
+.audit-table th { background: #f1f4f6; color: #26343d; }
+.audit-table thead th { position: sticky; top: 0; z-index: 2; }
+.audit-table th:first-child { position: sticky; left: 0; z-index: 1; text-align: left; }
+.audit-table thead th:first-child { z-index: 3; }
+.audit-state.is-positive { font-weight: 700; color: #214d44; }
+.audit-state.is-pending { font-size: 13px; color: #66727b; }
+@media (max-width: 720px) { .verification-note { padding-inline: 14px; } }
+
+.compare-legend { margin: 0 0 16px; line-height: 1.7; color: #52606b; font-size: 15px; }
+.condition-status.is-positive { color: #214d44; font-weight: 600; }
+.condition-status.is-pending { color: #67737b; }
+.compare-evidence summary { cursor: pointer; width: fit-content; }
+.compare-evidence p { margin-block: 10px; font-size: 15px; line-height: 1.7; }

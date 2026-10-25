@@ -1,0 +1,9 @@
+{
+  "single_station_rows": 18,
+  "two_station_rows": 36,
+  "missing_row_rejected": true,
+  "duplicate_row_rejected": true,
+  "unsupported_positive_rejected": true,
+  "existing_workflow_tests_passed": 9,
+  "real_station_research_performed": false
+}

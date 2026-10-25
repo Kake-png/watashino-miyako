@@ -1297,3 +1297,5 @@ body { font-size: 16px; }
   .search-first .feature-link:nth-child(-n + 2) { grid-column: span 12; }
   .station-lead-photo > img { min-height: 320px; }
 }
+
+.service-description{font-size:.9rem;line-height:1.7;color:#24352f;margin:.65rem 0 1rem}.brand strong{white-space:nowrap}

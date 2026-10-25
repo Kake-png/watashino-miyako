@@ -3,21 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="{{STATION_NAME}}駅の交通、買い物、街の変化を、駅前から徒歩圏の順に読む生活圏ガイド。">
+  <meta name="description" content="{{STATION_DESCRIPTION}}">
+  <link rel="canonical" href="{{STATION_CANONICAL}}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{STATION_NAME}}駅の住みやすさ・街の特徴｜街えらび案内所">
+  <meta property="og:description" content="{{STATION_DESCRIPTION}}">
+  <meta property="og:url" content="{{STATION_CANONICAL}}">
+  <script type="application/ld+json">{{STATION_JSONLD}}</script>
   <meta name="theme-color" content="#183f39">
-  <title>{{STATION_NAME}}｜駅まち図譜（仮）</title>
+  <title>{{STATION_NAME}}駅の住みやすさ・街の特徴｜街えらび案内所</title>
   <link rel="preconnect" href="https://tiles.openfreemap.org">
   <link rel="stylesheet" href="/vendor/leaflet.css?v=1.9.4">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/style.css?v=34">
+  <link rel="stylesheet" href="/assets/style.css?v=40">
   <link rel="stylesheet" href="/assets/interface-v34.css">
   <script src="/vendor/leaflet.js?v=1.9.4"></script>
-  <script type="module" src="/assets/app.js?v=34"></script>
+  <script type="module" src="/assets/app.js?v=40"></script>
 </head>
 <body data-page="station" data-station-slug="{{STATION_SLUG}}">
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
-    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">図</span><span><strong>駅まち図譜 <i>仮</i></strong><small>街から選ぶ、住む場所</small></span></a>
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">図</span><span><strong>街えらび案内所</strong><small>街から選ぶ、住む場所</small></span></a>
     <span></span>
     <nav class="site-nav" id="site-nav" aria-label="主要メニュー">
       <a href="/#atlas">求める生活</a>
@@ -29,7 +35,7 @@
   </header>
   <main class="page" id="main"><div id="station-page"></div></main>
   <footer class="site-footer">
-    <div><strong>駅まち図譜（仮）</strong><p>数値化しにくい街の方向差を、地図・写真・言葉で読みます。</p></div>
+    <div><strong>街えらび案内所</strong><p>数値化しにくい街の方向差を、地図・写真・言葉で読みます。</p></div>
     <div class="footer-links"><a href="/about/">このサイトについて</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a><a href="/#atlas">ほかの駅を見る</a></div>
   </footer>
 </body>

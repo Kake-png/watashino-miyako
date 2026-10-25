@@ -94,13 +94,13 @@ if (!revisionCss.includes("width: 3px;")) errors.push("Section heading rail is m
 if (!revisionCss.includes(".search-first .condition-drawer > summary { margin-top: 7px; }")) errors.push("Condition section spacing is missing");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('href="/assets/interface-v34.css"')) errors.push("Home is missing the uniquely named interface stylesheet");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=34"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('href="/assets/interface-v34.css?v=40"')) errors.push("Home is missing the versioned interface stylesheet");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=40"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");
 if (!indexHtml.includes('id="route-match-mode"')) errors.push("Home is missing the route match mode");
-if (!appSource.includes('from "/assets/data.js?v=34"')) errors.push("App is missing the versioned data module import");
+if (!appSource.includes('from "/assets/data.js?v=40"')) errors.push("App is missing the versioned data module import");
 for (const retiredCss of ["revision.css", "interface-v31.css", "interface-v32.css", "interface-v33.css"]) {
   if (fs.existsSync(path.join(publicRoot, "assets", retiredCss))) errors.push(`Retired stylesheet is still present: ${retiredCss}`);
 }
@@ -118,9 +118,60 @@ if (!appSource.includes("mergeConnectedLines")) errors.push("Route display is mi
 if (appSource.includes("selectedSegmentRoutes") || appSource.includes("selectedCorridorOffsets")) errors.push("Route display still depends on the selected route combination");
 if (appSource.includes('fetch("/assets/route-geometry')) errors.push("Route geometry must not be a required external fetch");
 
+for (const station of stations) {
+  for (const tag of Object.keys(tagLabels)) {
+    const record = station.evidence?.[tag];
+    if (!record || record.value !== station.tags.includes(tag)) errors.push(`${station.slug}/${tag}: evidence disagrees with filter tag`);
+    if (record?.status === "verified" && (!record.checkedAt || !record.sourceIds.length)) errors.push(`${station.slug}/${tag}: verified fact is missing provenance`);
+    for (const sourceId of record?.sourceIds || []) {
+      const source = ATLAS_DATA.factSources[sourceId];
+      if (!source || !source.url.startsWith("https://") || !source.checkedAt) errors.push(`${station.slug}/${tag}: invalid source ${sourceId}`);
+    }
+  }
+}
+
+const htmlFiles = [];
+function walk(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) walk(target);
+    else if (entry.name.endsWith(".html")) htmlFiles.push(target);
+  }
+}
+walk(publicRoot);
+for (const file of htmlFiles) {
+  const html = fs.readFileSync(file, "utf8");
+  const relative = path.relative(publicRoot, file);
+  if (/\{\{[A-Z_]+\}\}/.test(html)) errors.push(`${relative}: unexpanded template token`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) errors.push(`${relative}: expected exactly one static h1`);
+  if ((html.match(/rel="canonical"/g) || []).length !== 1) errors.push(`${relative}: expected exactly one canonical`);
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+  if (ids.length !== new Set(ids).size) errors.push(`${relative}: duplicate DOM id`);
+  for (const match of html.matchAll(/\b(?:src|href)="(\/[^"#?]*)(?:[^\"]*)"/g)) {
+    const urlPath = decodeURIComponent(match[1]);
+    if (!urlPath) continue;
+    const target = path.join(publicRoot, urlPath);
+    if (!fs.existsSync(target) && !fs.existsSync(path.join(target, "index.html"))) errors.push(`${relative}: missing local link ${urlPath}`);
+  }
+  for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    try {
+      const schema = JSON.parse(match[1]);
+      const canonical = html.match(/rel="canonical" href="([^"]+)"/)?.[1];
+      if (schema.url !== canonical) errors.push(`${relative}: JSON-LD URL does not match canonical`);
+    } catch { errors.push(`${relative}: invalid JSON-LD`); }
+  }
+}
+for (const file of ["themes/index.html", "routes/index.html", "stations/index.html", "criteria/index.html", "404.html", "sitemap.xml", "assets/evidence.js", "assets/search.js"]) {
+  if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing release asset: ${file}`);
+}
+const sitemap = fs.readFileSync(path.join(publicRoot, "sitemap.xml"), "utf8");
+for (const match of sitemap.matchAll(/<loc>https:\/\/watashino-miyako\.kake-web\.workers\.dev([^<]+)<\/loc>/g)) {
+  if (!fs.existsSync(path.join(publicRoot, match[1], "index.html"))) errors.push(`Sitemap points to missing page: ${match[1]}`);
+}
+
 if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);
 }
 
-console.log(`OK: ${stations.length} stations, ${themePresets.length} lifestyle themes, ${Object.keys(sources).length} licensed photos, ${Object.keys(tagLabels).length} filters, ${routeIds.size} routes.`);
+console.log(`OK: ${stations.length} stations, ${themePresets.length} lifestyle themes, ${Object.keys(sources).length} licensed photos, ${Object.keys(tagLabels).length} filters, ${routeIds.size} routes; ${htmlFiles.length} HTML pages and local links checked.`);
