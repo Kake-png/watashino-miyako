@@ -14,12 +14,12 @@
   const script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.append(script);
  }
  function save(value){try{localStorage.setItem(key,value);}catch{} location.reload();}
- const box=document.createElement('section');box.className='page analytics-choice';box.setAttribute('aria-label','アクセス解析の設定');
- const text=document.createElement('p');text.textContent='Google Analyticsで利用状況を計測します。許可するとCookieを利用します。拒否しても全機能を利用できます。';box.append(text);
- for(const [label,value] of [['解析を許可','granted'],['解析を拒否','denied']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>save(value);box.append(b);}
- const policy=document.createElement('a');policy.href='/privacy/';policy.textContent='プライバシー';box.append(policy);
- const control=document.createElement('button');control.type='button';control.textContent='アクセス解析の設定';control.onclick=()=>{box.hidden=false;box.scrollIntoView({block:'center'});};
- document.querySelector('.site-footer')?.append(control);
- document.querySelector('.site-footer')?.before(box);box.hidden=!!choice;
- if(choice==='granted') start();
+ const controls=document.querySelector('[data-analytics-controls]');
+ if(controls){
+  const status=document.createElement('p');status.textContent=choice==='denied'?'このブラウザの解析は無効です。':'このブラウザの解析は有効です。';controls.append(status);
+  for(const [label,value] of [['このブラウザの解析を無効にする','denied'],['解析を有効に戻す','granted']]){
+   const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>save(value);controls.append(button);
+  }
+ }
+ if(choice!=='denied') start();
 })();

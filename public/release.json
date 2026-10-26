@@ -1,5 +1,5 @@
 {
-  "version": "ekimachi-zufu-v42",
+  "version": "ekimachi-zufu-v43",
   "date": "2026-10-26",
   "stationCount": 15,
   "audit": {
@@ -16,8 +16,8 @@
     "assets/audit-data.js": "50e08374388ee6026a6d63592c138dc2eb7b35f77fea9260be896fd33f9bc9b3",
     "assets/evidence-view.js": "af80b138f45f40d6cdd9e4e6d63681c8171d0c39048d35092a04324ff412c01d",
     "assets/search.js": "b9952842dfcac3f20624d74e96616a357bcb2b7b4ef63fb4c0622fbf3dedbdc6",
-    "assets/style.css": "c3713ad92c526164151b829444ae682f2943c37b12b3510d66f745a5e7428085",
+    "assets/style.css": "8fb23d3145e07d0a364804203ba9bc881cd04ef211f864a175517a3991e6a1d7",
     "assets/interface-v34.css": "944c456c0c1ba41a506f8a54fd5b464851dfbdd986aec06abf72be3498ec37cf",
-    "index.html": "c89840f84259e730e222353005c2f59cf708896b1744d9b27c79a942173aeb7a"
+    "index.html": "48a88e4e64020d89faf59cb7f8dbe2a395ffb780651da4b39649ebcad94082c2"
   }
 }

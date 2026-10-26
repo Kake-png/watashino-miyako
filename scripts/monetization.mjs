@@ -10,7 +10,7 @@ export function applyMonetization(html, page, stationSlugs, today = new Date().t
  let head = '';
  if(settings.searchConsoleVerification) head += `<meta name="google-site-verification" content="${esc(settings.searchConsoleVerification)}">`;
  if(settings.adsensePublisherId) head += `<meta name="google-adsense-account" content="${esc(settings.adsensePublisherId)}">`;
- if(settings.gaMeasurementId) head += `<meta name="atlas-ga-id" content="${esc(settings.gaMeasurementId)}"><script defer src="/assets/analytics.js?v=41"></script>`;
+ if(settings.gaMeasurementId) head += `<meta name="atlas-ga-id" content="${esc(settings.gaMeasurementId)}"><script defer src="/assets/analytics.js?v=43"></script>`;
  html = html.replace('</head>', `<!--BUSINESS_START-->${head}<!--BUSINESS_END--></head>`);
  const cards=[];
  for(const ad of settings.sponsors) {

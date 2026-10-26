@@ -14,18 +14,19 @@ test('local sponsor is escaped, restricted to contracted station and period, and
  assert.equal(applyMonetization(active,'station/oimachi',['oimachi'],'2026-10-26'),active);
  settings.sponsors=[];
 });
-test('analytics sends nothing before consent or after refusal; opt-in loads one tag',()=>{
+test('analytics loads by default, honors previous refusal and adds no footer button',()=>{
  const code=fs.readFileSync(new URL('../public/assets/analytics.js',import.meta.url),'utf8');
  for(const consent of [null,'denied','granted']) {
   const dom=new JSDOM('<meta name="atlas-ga-id" content="G-TEST123"><footer class="site-footer"></footer>',{url:'https://example.com/',runScripts:'outside-only'});
   if(consent)dom.window.localStorage.setItem('atlas-analytics-consent-v1',consent);
   dom.window.eval(code);
-  assert.equal(dom.window.document.querySelectorAll('script[src*="googletagmanager"]').length,consent==='granted'?1:0);
+  assert.equal(dom.window.document.querySelectorAll('script[src*="googletagmanager"]').length,consent==='denied'?0:1);
+  assert.equal(dom.window.document.querySelector('.site-footer button'),null);
   dom.window.close();
  }
 });
 
-test('configured GA ID reaches all published pages once and opt-in config',()=>{
+test('configured GA ID reaches all published pages once and default config',()=>{
  assert.equal(settings.gaMeasurementId,'G-H94HSFCFJE');
  const root=new URL('../public/',import.meta.url);
  for(const file of fs.readdirSync(root,{recursive:true}).filter(f=>f.endsWith('.html'))){
@@ -41,5 +42,12 @@ test('configured GA ID reaches all published pages once and opt-in config',()=>{
  const config=dom.window.dataLayer.find(args=>args[0]==='config');
  assert.equal(config[1],settings.gaMeasurementId);
  assert.equal(config[2].allow_google_signals,false);
+ dom.window.close();
+});
+
+test('analytics stays disabled on localhost',()=>{
+ const dom=new JSDOM('<meta name="atlas-ga-id" content="G-H94HSFCFJE"><footer class="site-footer"></footer>',{url:'http://localhost/',runScripts:'outside-only'});
+ dom.window.eval(fs.readFileSync(new URL('../public/assets/analytics.js',import.meta.url),'utf8'));
+ assert.equal(dom.window.document.querySelector('script[src*="googletagmanager"]'),null);
  dom.window.close();
 });
