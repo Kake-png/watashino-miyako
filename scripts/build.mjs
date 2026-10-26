@@ -40,7 +40,7 @@ const templates = path.join(root, "templates");
 const publishedPages = new Map();
 function finalizeHtml(html, relativePath) {
   const url = `${siteOrigin}/${relativePath ? `${relativePath.replaceAll(path.sep, "/")}/` : ""}`;
-  html = html.replaceAll("?v=34", "?v=40")
+  html = html.replaceAll("?v=40", "?v=44").replaceAll("?v=34", "?v=44")
     .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=40"')
     .replaceAll("https://tiles.openfreemap.org", "https://tile.openstreetmap.org");
   html = html.replace("制定・最終更新：2026年9月21日", "制定：2026年9月21日・最終更新：2026年10月17日")
@@ -135,7 +135,7 @@ for (const theme of ATLAS_DATA.themePresets) {
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHtml(theme.description)}">`)
     .replace('<link rel="canonical" href="https://watashino-miyako.kake-web.workers.dev/">', `<link rel="canonical" href="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
     .replace('<meta property="og:url" content="https://watashino-miyako.kake-web.workers.dev/">', `<meta property="og:url" content="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
-    .replace('id="atlas-title">暮らしから駅を探す', `id="atlas-title">${escapeHtml(theme.title)}`)
+    .replace('id="atlas-title">好きなことを、続けやすい街へ。', `id="atlas-title">${escapeHtml(theme.title)}`)
     .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy" aria-labelledby="theme-static-title"><h2 id="theme-static-title">${escapeHtml(theme.title)}：候補と確認点</h2><p>${escapeHtml(theme.description)}</p><p>次のいずれかに該当する駅を表示します：${escapeHtml(theme.criteria.join("、"))}。複数の「求める生活」を選んだ場合は、各テーマの条件をそれぞれ満たす駅に絞ります。</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/criteria/">具体的な判定基準</a> · <a href="/themes/">暮らし別の一覧</a></p></section>`)
     .replace('<body data-page="home">', `<body data-page="home" data-theme-id="${escapeHtml(theme.id)}">`)
     .replace(/<!--DIRECTORY_START-->[\s\S]*?<!--DIRECTORY_END-->/, "");
@@ -154,7 +154,7 @@ for (const route of ATLAS_DATA.routeGroups.flatMap((group) => group.routes).filt
   writePage(path.join("routes", route.id), homeTemplate
     .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(title)}｜街えらび案内所</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHtml(route.label)}を使える掲載駅の候補。駅の交通・買い物・休日の条件を比べられます。">`)
-    .replace('id="atlas-title">暮らしから駅を探す', `id="atlas-title">${escapeHtml(title)}`)
+    .replace('id="atlas-title">好きなことを、続けやすい街へ。', `id="atlas-title">${escapeHtml(title)}`)
     .replace('<body data-page="home">', `<body data-page="home" data-route-id="${route.id}">`)
     .replace('id="route-drawer"', 'id="route-drawer" open')
     .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy"><h2>${escapeHtml(route.label)}を使える掲載駅</h2><p>路線全体の駅一覧ではなく、このサイトで掲載している候補駅です。駅名が異なる近隣駅から乗る場合も含みます。</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/routes/">他の路線から探す</a></p></section>`)
@@ -190,9 +190,9 @@ const sitemapPaths = [
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((url) => `  <url><loc>${siteOrigin}${url}</loc></url>`).join("\n")}\n</urlset>\n`;
 fs.writeFileSync(path.join(root, "public", "sitemap.xml"), sitemap);
 fs.writeFileSync(path.join(root, "public", "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`);
-fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "ekimachi-zufu-v43\n2026-10-26\n");
+fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "ekimachi-zufu-v44\n2026-10-26\n");
 
 const fingerprints = Object.fromEntries(["assets/app.js", "assets/data.js", "assets/evidence.js", "assets/audit-data.js", "assets/evidence-view.js", "assets/search.js", "assets/style.css", "assets/interface-v34.css", "index.html"].map((file) => [file, createHash("sha256").update(fs.readFileSync(path.join(root, "public", file))).digest("hex")]));
-fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "ekimachi-zufu-v43", date: "2026-10-26", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
+fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "ekimachi-zufu-v44", date: "2026-10-26", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
 
 console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied Leaflet browser assets.`);

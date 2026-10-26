@@ -122,3 +122,43 @@ test("without Leaflet the fallback and filters still work", async () => {
   assert.equal(document.querySelectorAll(".station-row").length, 4);
   dom.window.close();
 });
+
+test('hobby focus, priorities, URL reload and comparison keep selected conditions',async()=>{
+ const {dom,document,window}=await openPage('');
+ document.querySelector('[data-hobby="reading"]').click();
+ assert(document.querySelector('[data-tag="large_bookstore"]').classList.contains('hobby-related'));
+ const book=document.querySelector('[data-tag="large_bookstore"]');book.click();
+ const movie=document.querySelector('[data-tag="cinema"]');movie.click();movie.click();
+ assert.equal(book.dataset.priority,'required');assert.equal(movie.dataset.priority,'preferred');
+ const expected=search.filterStations(ATLAS_DATA.stations,ATLAS_DATA.routeLabels,ATLAS_DATA.themePresets,{tags:['large_bookstore'],preferred:['cinema']});
+ assert.deepEqual([...document.querySelectorAll('.station-row')].map(x=>x.dataset.slug),expected.map(s=>s.slug));
+ assert(document.querySelector('.selected-evidence').textContent.includes('映画館'));
+ assert.equal(new URL(window.location.href).searchParams.get('wish'),'cinema');
+ const round=search.readSearchState(new URL(window.location.href).searchParams,ATLAS_DATA);
+ assert.deepEqual(round.preferred,['cinema']);assert.deepEqual(round.tags,['large_bookstore']);
+ document.querySelector('#clear-filters').click();assert.equal(document.querySelectorAll('.station-row').length,15);
+ dom.window.close();
+});
+test('zero matches offers explicit relaxation without changing choices',async()=>{
+ const {dom,document}=await openPage('');
+ for(const tag of Object.keys(ATLAS_DATA.tagLabels)) document.querySelector(`[data-tag="${tag}"]`).click();
+ assert.equal(document.querySelectorAll('.station-row').length,0);
+ assert.equal(document.querySelectorAll('[data-priority="required"]').length,18);
+ dom.window.close();
+});
+
+test('relaxation shows correct count and changes only after clicking; comparison puts selection first',async()=>{
+ const {dom,document,window}=await openPage('');
+ let pair=Object.keys(ATLAS_DATA.tagLabels);
+ const matching=tags=>search.filterStations(ATLAS_DATA.stations,ATLAS_DATA.routeLabels,ATLAS_DATA.themePresets,{tags});
+ for(const tag of [...pair]){const reduced=pair.filter(t=>t!==tag);if(reduced.length && !matching(reduced).length)pair=reduced;}
+ assert(pair);for(const t of pair)document.querySelector(`[data-tag="${t}"]`).click();
+ const proposal=document.querySelector(`[data-relax="${pair[0]}"]`);assert(proposal);
+ assert.equal(document.querySelectorAll('.station-row').length,0);proposal.click();
+ assert(document.querySelectorAll('.station-row').length>0);
+ const saved=window.localStorage.getItem('atlas-search-priorities');dom.window.close();
+ const cmp=await openPage('compare');cmp.window.localStorage.setItem('atlas-search-priorities',saved);
+ cmp.document.querySelector('form').dispatchEvent(new cmp.window.Event('submit',{cancelable:true}));
+ assert(cmp.document.querySelector('tbody tr th').textContent.startsWith('必須：'));
+ cmp.dom.window.close();
+});

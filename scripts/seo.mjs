@@ -4,7 +4,7 @@ export function enhanceSeo(html, path, url) {
   const origin = new URL(url).origin;
   html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
     .replace(/<meta (?:property="og:[^"]+"|name="twitter:[^"]+")[^>]*>/g, '');
-  if (!path) html = html.replace(/<title>.*?<\/title>/, `<title>${brand}｜駅の特徴・暮らしの条件から住む街を探す</title>`)
+  if (!path) html = html.replace(/<title>.*?<\/title>/, `<title>${brand}｜趣味・好きな過ごし方から住む街を探す</title>`)
     .replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="図書館・大型書店・散歩・夜景・交通アクセスなど、駅ごとの特徴を比べて住む街を探せる街えらび案内所。南東京〜横浜の15駅を、確認済みの条件と出典付きの情報で紹介します。">');
   if (!html.includes('name="description"')) html = html.replace('</head>', '<meta name="description" content="街えらび案内所の運営方針・掲載情報・写真の出典について。"></head>');
   const title = html.match(/<title>(.*?)<\/title>/)[1];

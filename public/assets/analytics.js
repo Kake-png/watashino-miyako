@@ -3,7 +3,7 @@
  if (!/^G-[A-Z0-9]+$/.test(id || '')) return;
  const key='atlas-analytics-consent-v1';
  let choice; try {choice=localStorage.getItem(key);} catch {}
- const excluded=location.hostname==='localhost' || location.hostname==='127.0.0.1';
+ const excluded=location.hostname==='terminal.local' || location.hostname==='localhost' || location.hostname==='127.0.0.1';
  function start(){
   if(excluded) return;
   window.dataLayer=window.dataLayer||[];

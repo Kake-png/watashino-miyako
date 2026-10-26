@@ -632,6 +632,8 @@ const ATLAS_DATA = (() => {
   ];
 
   const themePresets = [
+    {id:'movies',navLabel:'映画を観る',label:'映画館のある街に住みたい',title:'映画館のある街を探す',description:'駅の徒歩圏で利用できる映画館を、施設名と出典から確認して候補駅を探せます。',tags:['cinema'],matchMode:'any',criteria:['確認済みの映画館と駅からのアクセスは各駅の根拠を参照']},
+    {id:'night-walk',navLabel:'夜景を楽しむ',label:'夜景を楽しめる場所の近くに住みたい',title:'夜景を楽しめる街を探す',description:'徒歩20分以内で通常の夜景観賞に利用できる地点を確認した駅を紹介します。水辺に限らず一般公開の展望地点も対象です。',tags:['view'],matchMode:'any',criteria:['徒歩20分以内','通常の夜景観賞に利用可能な確認済み地点']},
     {
       id: "weekend-mobility",
       navLabel: "週末旅行",

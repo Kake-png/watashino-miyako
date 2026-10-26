@@ -10,6 +10,7 @@ export function filterStations(stations, routeLabels, themePresets, state = {}) 
   const tags = state.tags || [];
   const routes = state.routes || [];
   const themes = themePresets.filter((theme) => (state.themes || []).includes(theme.id));
+  const preferred = state.preferred || [];
   return stations.filter((station) => {
     const text = [station.name, station.kana, station.area, ...station.lines,
       ...station.routes.map((route) => routeLabels[route])].join(" ").toLocaleLowerCase("ja");
@@ -22,7 +23,7 @@ export function filterStations(stations, routeLabels, themePresets, state = {}) 
         : routes.some((route) => station.routes.includes(route))))
       && themes.every((theme) => matchesTheme(station, theme))
       && (state.rentMax == null || (Number.isFinite(station.rent1k) && station.rent1k <= state.rentMax));
-  });
+  }).sort((a,b) => preferred.filter(t=>b.tags.includes(t)).length - preferred.filter(t=>a.tags.includes(t)).length);
 }
 
 export function readSearchState(params, data, defaults = {}) {
@@ -35,7 +36,7 @@ export function readSearchState(params, data, defaults = {}) {
   const rent = Number(params.get("rent"));
   return {
     query: (params.get("q") || "").slice(0, 100),
-    tags: list("tags", knownTags), routes: list("routes", knownRoutes, defaults.routes),
+    tags: list("tags", knownTags), preferred: list("wish", knownTags).filter(t => !list("tags", knownTags).includes(t)), routes: list("routes", knownRoutes, defaults.routes),
     themes: list("themes", knownThemes, defaults.themes),
     matchMode: params.get("match") === "any" ? "any" : "all",
     routeMode: params.get("routeMode") === "all" ? "all" : "any",
@@ -45,6 +46,7 @@ export function readSearchState(params, data, defaults = {}) {
 
 export function searchParamsFor(state) {
   const params = new URLSearchParams();
+  if (state.preferred?.length) params.set("wish", state.preferred.join(","));
   if (state.query) params.set("q", state.query);
   if (state.tags.length) params.set("tags", state.tags.join(","));
   params.set("routes", state.routes.join(","));

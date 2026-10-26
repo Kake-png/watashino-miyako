@@ -33,7 +33,7 @@ test("search handles kana and nearby-route names", () => {
   assert(filter({ query: "浅草線" }).some((s) => s.slug === "togoshiginza"));
 });
 test("URLs round-trip and an explicitly cleared theme stays cleared", () => {
-  const state = { query: "川崎", tags: ["library"], routes: ["jr-nambu"], themes: [], matchMode: "any", routeMode: "all", rentMax: 10.5 };
+  const state = { query: "川崎", preferred: [], tags: ["library"], routes: ["jr-nambu"], themes: [], matchMode: "any", routeMode: "all", rentMax: 10.5 };
   assert.deepEqual(readSearchState(searchParamsFor(state), data, { themes: ["cycling"] }), state);
   const cleared = { ...state, routes: [] };
   assert.deepEqual(readSearchState(searchParamsFor(cleared), data, { themes: ["cycling"], routes: ["jr-nambu"] }), cleared);
