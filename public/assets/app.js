@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=46";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=46";
-import { evidenceHtml } from "/assets/evidence-view.js?v=46";
+import { ATLAS_DATA } from "/assets/data.js?v=47";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=47";
+import { evidenceHtml } from "/assets/evidence-view.js?v=47";
 
 (() => {
   "use strict";
@@ -184,19 +184,55 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
 
     const hobbies = [ ['reading','本を楽しむ',['large_bookstore','library']], ['movies','映画を観る',['cinema']], ['cycling','自転車で走る',['cycle']], ['walk','散歩・夜景',['park','river','sea','view']], ['drinks','飲み歩く',['drinks']], ['travel','旅行・ドライブ',['airport','shinkansen','expressway']], ['racing','競馬場へ出かける',['racecourse']] ];
     const hobbyList = document.querySelector('#hobby-list');
-    if(hobbyList) {
-      hobbyList.innerHTML=hobbies.map(([id,label])=>`<button type="button" data-hobby="${id}" aria-pressed="false">${label}</button>`).join('');
+    const hobbyParams=new URLSearchParams(location.search);
+    const selectedHobbies=new Set((hobbyParams.get('hobbies')||'').split(',').filter(id=>hobbies.some(h=>h[0]===id)));
+    const automaticTags=new Set((hobbyParams.get('autoWish')||'').split(',').filter(tag=>preferredTags.has(tag)));
+    const manualTags=new Set([...activeTags,...preferredTags].filter(tag=>!automaticTags.has(tag)));
+    const hobbyDialog=document.createElement('dialog');
+    hobbyDialog.className='hobby-dialog';hobbyDialog.setAttribute('aria-labelledby','hobby-dialog-title');
+    hobbyDialog.innerHTML=`<div class="hobby-dialog-head"><h2 id="hobby-dialog-title">好きな過ごし方を組み合わせる</h2><button type="button" data-close-hobbies aria-label="閉じる">閉じる</button></div><p>複数選べます。関連する条件を「あれば嬉しい」に自動設定します。条件は下で調整できます。</p><div class="dialog-hobbies"></div><div class="dialog-conditions"></div><p class="dialog-count" aria-live="polite"></p><div class="hobby-dialog-actions"><button type="button" data-close-hobbies>この条件で探す</button></div>`;
+    document.body.append(hobbyDialog);
+    let hobbyOpener=null;
+    const editHobbies=document.createElement('button');editHobbies.type='button';editHobbies.className='edit-hobbies';editHobbies.textContent='選んだ条件を調整';editHobbies.hidden=true;
+    hobbyList?.after(editHobbies);
+    editHobbies.addEventListener('click',()=>{hobbyOpener=editHobbies;renderHobbies();if(typeof hobbyDialog.showModal==='function')hobbyDialog.showModal();else hobbyDialog.setAttribute('open','');});
+    function closeHobbies(){if(typeof hobbyDialog.close==='function')hobbyDialog.close();else hobbyDialog.removeAttribute('open');hobbyOpener?.focus({preventScroll:true});}
+    hobbyDialog.addEventListener('click',event=>{if(event.target.closest('[data-close-hobbies]'))closeHobbies();});
+    hobbyDialog.addEventListener('cancel',()=>{hobbyOpener?.focus({preventScroll:true});});
+    function relatedHobbyTags(){return [...new Set(hobbies.filter(h=>selectedHobbies.has(h[0])).flatMap(h=>h[2]))];}
+    function renderHobbies(){
+      const related=relatedHobbyTags();
+      editHobbies.hidden=!selectedHobbies.size;
+      hobbyList?.querySelectorAll('[data-hobby]').forEach(b=>b.setAttribute('aria-pressed',String(selectedHobbies.has(b.dataset.hobby))));
+      filterList.querySelectorAll('[data-tag]').forEach(b=>b.classList.toggle('hobby-related',related.includes(b.dataset.tag)));
+      const context=document.querySelector('#hobby-context');
+      if(context)context.textContent=selectedHobbies.size?`選択中：${hobbies.filter(h=>selectedHobbies.has(h[0])).map(h=>h[1]).join('・')}。条件は自由に調整できます。`:'過ごし方は複数選べます。関連条件を「あれば嬉しい」に自動設定します。';
+      hobbyDialog.querySelector('.dialog-hobbies').innerHTML=hobbies.map(([id,label])=>`<button type="button" data-dialog-hobby="${id}" aria-pressed="${selectedHobbies.has(id)}">${label}</button>`).join('');
+      hobbyDialog.querySelector('.dialog-conditions').innerHTML=related.length?`<h3>関連する条件</h3>${related.map(tag=>`<label class="dialog-condition"><span>${escapeHtml(tagLabels[tag])}<small>${escapeHtml(tagCriteria[tag]||'')}</small></span><select data-hobby-priority="${tag}" aria-label="${escapeHtml(tagLabels[tag])}の優先度"><option value="none" ${!activeTags.has(tag)&&!preferredTags.has(tag)?'selected':''}>指定なし</option><option value="preferred" ${preferredTags.has(tag)?'selected':''}>あれば嬉しい</option><option value="required" ${activeTags.has(tag)?'selected':''}>必須</option></select></label>`).join('')}`:'<p>好きな過ごし方を選んでください。</p>';
+      hobbyDialog.querySelector('.dialog-count').textContent=`現在の条件で${currentMatches().length}駅。必須 ${activeTags.size}件・あれば嬉しい ${preferredTags.size}件`;
+    }
+    function toggleHobby(id){
+      if(selectedHobbies.has(id))selectedHobbies.delete(id);else selectedHobbies.add(id);
+      const related=relatedHobbyTags();
+      for(const tag of [...automaticTags])if(!related.includes(tag)){preferredTags.delete(tag);automaticTags.delete(tag);}
+      for(const tag of related)if(!manualTags.has(tag)&&!activeTags.has(tag)&&!preferredTags.has(tag)){preferredTags.add(tag);automaticTags.add(tag);}
+      matchMode.value='all';syncTagButtons();applyFilters();renderHobbies();
+    }
+    if(hobbyList){
+      hobbyList.innerHTML=hobbies.map(([id,label])=>`<button type="button" data-hobby="${id}" aria-pressed="${selectedHobbies.has(id)}">${label}</button>`).join('');
       hobbyList.addEventListener('click',event=>{
         const button=event.target.closest('[data-hobby]');if(!button)return;
-        const hobby=hobbies.find(h=>h[0]===button.dataset.hobby);
-        hobbyList.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
-        filterList.querySelectorAll('[data-tag]').forEach(b=>b.classList.toggle('hobby-related',hobby[2].includes(b.dataset.tag)));
-        filterList.querySelectorAll('.filter-group').forEach(group=>group.style.order=[...group.querySelectorAll('[data-tag]')].some(b=>hobby[2].includes(b.dataset.tag))?'-1':'0');
-        const drawer=document.querySelector('.condition-drawer');if(drawer)drawer.open=true;
-        document.querySelector('#hobby-context').textContent=`${hobby[1]}：強調された条件を「必須」か「あれば嬉しい」にしてください。`;
-        chipByTag.get(hobby[2][0])?.focus({preventScroll:true});
+        hobbyOpener=button;toggleHobby(button.dataset.hobby);
+        if(!hobbyDialog.open){if(typeof hobbyDialog.showModal==='function')hobbyDialog.showModal();else hobbyDialog.setAttribute('open','');}
       });
     }
+    hobbyDialog.addEventListener('click',event=>{const b=event.target.closest('[data-dialog-hobby]');if(b){const id=b.dataset.dialogHobby;toggleHobby(id);hobbyDialog.querySelector(`[data-dialog-hobby="${id}"]`)?.focus({preventScroll:true});}});
+    hobbyDialog.addEventListener('change',event=>{
+      const select=event.target.closest('[data-hobby-priority]');if(!select)return;
+      const tag=select.dataset.hobbyPriority;manualTags.add(tag);automaticTags.delete(tag);activeTags.delete(tag);preferredTags.delete(tag);
+      if(select.value==='required')activeTags.add(tag);if(select.value==='preferred')preferredTags.add(tag);
+      matchMode.value='all';syncTagButtons();applyFilters();renderHobbies();hobbyDialog.querySelector(`[data-hobby-priority="${tag}"]`)?.focus({preventScroll:true});
+    });
     function syncTagButtons(){
       chipByTag.forEach((button,key)=>{
         const level=activeTags.has(key)?'必須':preferredTags.has(key)?'あれば嬉しい':'指定なし';
@@ -225,10 +261,10 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
         options.append(button);
         chipByTag.set(key, button);
         button.addEventListener("click", () => {
+          manualTags.add(key);automaticTags.delete(key);
           if (activeTags.has(key)) { activeTags.delete(key); preferredTags.add(key); } else if(preferredTags.has(key)) preferredTags.delete(key); else activeTags.add(key);
           matchMode.value="all";
           syncTagButtons();
-          button.setAttribute("aria-pressed", String(activeTags.has(key)));
           themeDirty = Boolean(activeTheme);
           updateThemeContext();
           applyFilters();
@@ -453,7 +489,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
 
     function currentState() {
       return { query: searchInput.value.trim(), tags: [...activeTags], preferred: [...preferredTags], routes: [...activeRoutes],
-        themes: [...selectedThemes], matchMode: matchMode.value, routeMode: routeMatchMode.value,
+        themes: [...selectedThemes], hobbies:[...selectedHobbies], autoWish:[...automaticTags], matchMode: matchMode.value, routeMode: routeMatchMode.value,
         rentMax: Number(rentMax.value) || null };
     }
 
@@ -504,7 +540,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
       });
     }
 
-    stationList.addEventListener('click',event=>{const b=event.target.closest('[data-relax]');if(!b)return;activeTags.delete(b.dataset.relax);preferredTags.add(b.dataset.relax);syncTagButtons();applyFilters();});
+    stationList.addEventListener('click',event=>{const b=event.target.closest('[data-relax]');if(!b)return;manualTags.add(b.dataset.relax);automaticTags.delete(b.dataset.relax);activeTags.delete(b.dataset.relax);preferredTags.add(b.dataset.relax);syncTagButtons();applyFilters();});
     searchInput.addEventListener("input", applyFilters);
     rentMax.addEventListener("change", applyFilters);
     routeMatchMode.addEventListener("change", applyFilters);
@@ -520,6 +556,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
     clearFilters.addEventListener("click", () => {
       activeTags.clear();
       preferredTags.clear();
+      selectedHobbies.clear();automaticTags.clear();manualTags.clear();renderHobbies();
       selectedThemes.clear();
       rentMax.value = "";
       syncTagButtons();
@@ -533,6 +570,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=46";
       applyFilters();
     });
     applyFilters();
+    renderHobbies();
 
     const featuredStations = activeTheme
       ? stations.filter((station) => matchesTheme(station, activeTheme)).slice(0, 6)
