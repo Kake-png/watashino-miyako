@@ -657,3 +657,5 @@ body,
 }
 
 @media(max-width:720px){.site-header{display:flex!important;align-items:center;justify-content:space-between;min-height:60px;height:auto;padding:10px 16px;box-sizing:border-box}.site-header>.brand{min-width:0}.site-header>.nav-toggle{width:auto;min-width:64px;white-space:nowrap;flex-shrink:0;padding:8px}.site-header>.site-nav{position:absolute;top:100%;left:0;right:0;background:white;z-index:20}#selected-conditions{position:sticky;top:112px;z-index:7;max-height:105px;overflow:auto}.search-first .row-facts{font-size:12px;color:#183f39;margin-top:6px}}
+
+.rent-scale{display:flex;justify-content:space-between;width:100%;font-size:12px;color:#183f39;margin-top:-4px}

@@ -191,7 +191,7 @@ test('rent slider and number synchronize and removable selections update candida
  assert.equal(number.value,'13.7');assert.equal(new URL(window.location.href).searchParams.get('rent'),'13.7');
  number.value='9.8';number.dispatchEvent(new window.Event('change',{bubbles:true}));assert.equal(slider.value,'9.8');
  assert.equal(document.querySelectorAll('.station-row').length,ATLAS_DATA.stations.filter(s=>s.rent1k<=9.8).length);
- document.querySelector('[data-remove-rent]').click();assert.equal(number.value,'');assert.equal(document.querySelectorAll('.station-row').length,15);
+ slider.value='15.1';slider.dispatchEvent(new window.Event('input',{bubbles:true}));assert.equal(number.value,'');assert.equal(slider.getAttribute('aria-valuetext'),'上限なし');assert.equal(new URL(window.location.href).searchParams.has('rent'),false);assert.equal(document.querySelectorAll('.station-row').length,15);
  document.querySelector('#open-conditions').click();assert(document.querySelector('.mobile-conditions').open);
  document.querySelector('[data-close-mobile]').click();assert(!document.querySelector('.mobile-conditions').open);
  dom.window.close();

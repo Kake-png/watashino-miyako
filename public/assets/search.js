@@ -40,7 +40,7 @@ export function readSearchState(params, data, defaults = {}) {
     themes: list("themes", knownThemes, defaults.themes),
     matchMode: params.get("match") === "any" ? "any" : "all",
     routeMode: params.get("routeMode") === "all" ? "all" : "any",
-    rentMax: params.has("rent") && Number.isFinite(rent) && rent >= 5 && rent <= 15 ? Math.round(rent*10)/10 : null
+    rentMax: params.has("rent") && Number.isFinite(rent) && rent >= 0 && rent <= 15 ? Math.round(rent*10)/10 : null
   };
 }
 

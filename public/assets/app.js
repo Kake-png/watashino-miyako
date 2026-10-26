@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=49";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=49";
-import { evidenceHtml } from "/assets/evidence-view.js?v=49";
+import { ATLAS_DATA } from "/assets/data.js?v=51";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=51";
+import { evidenceHtml } from "/assets/evidence-view.js?v=51";
 
 (() => {
   "use strict";
@@ -468,13 +468,15 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=49";
     function currentState() {
       return { query: searchInput.value.trim(), tags: [...activeTags], preferred: [...preferredTags], routes: [...activeRoutes],
         themes: [...selectedThemes], hobbies:[...selectedHobbies], autoRequired:[...automaticTags], matchMode: matchMode.value, routeMode: routeMatchMode.value,
-        rentMax: Number(rentMax.value) || null };
+        rentMax: rentMax.value === "" ? null : Number(rentMax.value) };
     }
 
     function applyFilters() {
       const previousPanelScroll = atlasPanel.scrollTop;
       const previousPageScroll = window.scrollY;
       const matches = currentMatches();
+      const rangeControl=document.querySelector('#rent-slider');
+      if(rangeControl){rangeControl.value=rentMax.value===''?'15.1':rentMax.value;rangeControl.setAttribute('aria-valuetext',rentMax.value?`${rentMax.value}万円以下`:'上限なし');}
       const params = searchParamsFor(currentState());
       const selectedBar=document.querySelector('#selected-conditions');
       if(selectedBar)selectedBar.innerHTML=[...[...activeTags].map(t=>`<button type="button" data-remove-tag="${t}">${escapeHtml(tagLabels[t])}：必須 ×</button>`),...[...preferredTags].map(t=>`<button type="button" data-remove-tag="${t}">${escapeHtml(tagLabels[t])}：嬉しい ×</button>`),...[...activeRoutes].map(t=>`<button type="button" data-remove-route="${t}">${escapeHtml(routeLabels[t])} ×</button>`),...[...selectedThemes].map(t=>`<button type="button" data-remove-theme="${t}">${escapeHtml(themeById.get(t)?.navLabel||t)} ×</button>`),...(rentMax.value?[`<button type="button" data-remove-rent>参考相場 ${rentMax.value}万円以下 ×</button>`]:[])].join('');
@@ -525,8 +527,8 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=49";
     stationList.addEventListener('click',event=>{const b=event.target.closest('[data-relax]');if(!b)return;manualTags.add(b.dataset.relax);automaticTags.delete(b.dataset.relax);activeTags.delete(b.dataset.relax);preferredTags.add(b.dataset.relax);syncTagButtons();applyFilters();});
     searchInput.addEventListener("input", applyFilters);
     const rentSlider=document.querySelector('#rent-slider');
-    if(rentSlider){rentSlider.value=rentMax.value||'15';rentSlider.addEventListener('input',()=>{rentMax.value=rentSlider.value;applyFilters();});}
-    function syncRent(){if(rentMax.value){const n=Math.min(15,Math.max(5,Number(rentMax.value)));rentMax.value=String(Math.round(n*10)/10);if(rentSlider)rentSlider.value=rentMax.value;}applyFilters();}
+    if(rentSlider){rentSlider.value=rentMax.value===''?'15.1':rentMax.value;rentSlider.addEventListener('input',()=>{rentMax.value=Number(rentSlider.value)>15?'':rentSlider.value;applyFilters();});}
+    function syncRent(){if(rentMax.value){const n=Math.min(15,Math.max(0,Number(rentMax.value)));rentMax.value=String(Math.round(n*10)/10);if(rentSlider)rentSlider.value=rentMax.value;}applyFilters();}
     rentMax.addEventListener('change',syncRent);
     rentMax.addEventListener('input',()=>{if(rentMax.validity.valid){if(rentSlider && rentMax.value)rentSlider.value=rentMax.value;applyFilters();}});
     document.querySelector('#clear-rent')?.addEventListener('click',()=>{rentMax.value='';applyFilters();});
