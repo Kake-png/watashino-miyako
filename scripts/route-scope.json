@@ -1,0 +1,245 @@
+{
+  "jr-keihin-tohoku": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "東北線",
+      "東海道線",
+      "根岸線"
+    ],
+    "chains": [
+      [
+        "大宮",
+        "赤羽",
+        "田端",
+        "東京",
+        "品川",
+        "横浜",
+        "桜木町",
+        "磯子",
+        "大船"
+      ]
+    ]
+  },
+  "jr-yamanote": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "山手線",
+      "東海道線",
+      "東北線"
+    ],
+    "chains": [
+      [
+        "品川",
+        "大崎",
+        "渋谷",
+        "新宿",
+        "池袋",
+        "田端",
+        "上野",
+        "東京",
+        "品川"
+      ]
+    ]
+  },
+  "jr-saikyo": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "山手線",
+      "赤羽線",
+      "東北線"
+    ],
+    "chains": [
+      [
+        "大崎",
+        "新宿",
+        "池袋",
+        "赤羽",
+        "武蔵浦和",
+        "大宮"
+      ]
+    ]
+  },
+  "jr-shonan-shinjuku": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "山手線",
+      "東北線",
+      "東海道線",
+      "横須賀線",
+      "高崎線",
+      "上越線",
+      "両毛線"
+    ],
+    "chains": [
+      [
+        "小田原",
+        "大船",
+        "横浜",
+        "武蔵小杉",
+        "大崎",
+        "新宿",
+        "池袋",
+        "赤羽",
+        "浦和",
+        "大宮",
+        "高崎",
+        "前橋"
+      ],
+      [
+        "逗子",
+        "大船",
+        "横浜",
+        "武蔵小杉",
+        "大崎",
+        "新宿",
+        "池袋",
+        "赤羽",
+        "浦和",
+        "大宮",
+        "宇都宮"
+      ]
+    ]
+  },
+  "jr-tokaido": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "東海道線"
+    ],
+    "chains": [
+      [
+        "東京",
+        "品川",
+        "川崎",
+        "横浜",
+        "大船",
+        "小田原",
+        "熱海"
+      ]
+    ]
+  },
+  "jr-yokosuka": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "東海道線",
+      "横須賀線"
+    ],
+    "chains": [
+      [
+        "東京",
+        "品川",
+        "武蔵小杉",
+        "横浜",
+        "大船",
+        "逗子",
+        "久里浜"
+      ]
+    ]
+  },
+  "jr-nambu": {
+    "operator": "東日本旅客鉄道",
+    "lines": [
+      "南武線"
+    ],
+    "chains": null
+  },
+  "tokyu-oimachi": {
+    "operator": "東急電鉄",
+    "lines": [
+      "大井町線"
+    ],
+    "chains": null,
+    "extensions": [
+      {
+        "lines": [
+          "田園都市線"
+        ],
+        "chain": [
+          "二子玉川",
+          "溝の口"
+        ]
+      }
+    ]
+  },
+  "tokyu-ikegami": {
+    "operator": "東急電鉄",
+    "lines": [
+      "池上線"
+    ],
+    "chains": null
+  },
+  "tokyu-tamagawa": {
+    "operator": "東急電鉄",
+    "lines": [
+      "東急多摩川線"
+    ],
+    "chains": null
+  },
+  "tokyu-meguro": {
+    "operator": "東急電鉄",
+    "lines": [
+      "目黒線"
+    ],
+    "chains": null,
+    "extensions": [
+      {
+        "lines": [
+          "東横線"
+        ],
+        "chain": [
+          "田園調布",
+          "日吉"
+        ]
+      }
+    ]
+  },
+  "tokyu-toyoko": {
+    "operator": "東急電鉄",
+    "lines": [
+      "東横線"
+    ],
+    "chains": null
+  },
+  "keikyu-main": {
+    "operator": "京浜急行電鉄",
+    "lines": [
+      "本線"
+    ],
+    "chains": null
+  },
+  "keikyu-airport": {
+    "operator": "京浜急行電鉄",
+    "lines": [
+      "空港線"
+    ],
+    "chains": null
+  },
+  "toei-asakusa": {
+    "operator": "東京都",
+    "lines": [
+      "1号線浅草線"
+    ],
+    "chains": null
+  },
+  "rinkai": {
+    "operator": "東京臨海高速鉄道",
+    "lines": [
+      "臨海副都心線"
+    ],
+    "chains": null
+  },
+  "sotetsu-main": {
+    "operator": "相模鉄道",
+    "lines": [
+      "相鉄本線"
+    ],
+    "chains": null
+  },
+  "yokohama-blue": {
+    "operator": "横浜市",
+    "lines": [
+      "1号線",
+      "3号線"
+    ],
+    "chains": null
+  }
+}

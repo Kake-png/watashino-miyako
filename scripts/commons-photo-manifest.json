@@ -82,5 +82,189 @@
     "title": "File:大森駅東口.jpg",
     "alt": "大森駅東口の駅舎と駅前広場",
     "caption": "大森駅東口。駅前の商業と、海側・山側で異なる徒歩環境を見比べたい。"
+  },
+  {
+    "key": "osaki-extra-1",
+    "station": "osaki",
+    "title": "File:Osaki Station West Exit Area, Tokyo - Sep 19, 2018.jpg",
+    "alt": "大崎駅西口の街並み",
+    "caption": "大崎駅西口の街並み。",
+    "include": true
+  },
+  {
+    "key": "osaki-extra-2",
+    "station": "osaki",
+    "title": "File:Gate City Osaki.jpg",
+    "alt": "大崎のゲートシティ",
+    "caption": "大崎のゲートシティ。",
+    "include": true
+  },
+  {
+    "key": "gotanda-extra-3",
+    "station": "gotanda",
+    "title": "File:五反田有楽街.jpg",
+    "alt": "五反田有楽街",
+    "caption": "五反田有楽街。",
+    "include": true
+  },
+  {
+    "key": "gotanda-extra-4",
+    "station": "gotanda",
+    "title": "File:Meguro river in Gotanda.jpg",
+    "alt": "五反田の目黒川",
+    "caption": "五反田の目黒川。",
+    "include": true
+  },
+  {
+    "key": "musashikoyama-extra-5",
+    "station": "musashikoyama",
+    "title": "File:Musashikoyama-Sta-E.JPG",
+    "alt": "武蔵小山駅東口",
+    "caption": "武蔵小山駅東口。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "musashikoyama-extra-6",
+    "station": "musashikoyama",
+    "title": "File:Musashikoyama-Sta-W.JPG",
+    "alt": "武蔵小山駅西口",
+    "caption": "武蔵小山駅西口。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "togoshiginza-extra-7",
+    "station": "togoshiginza",
+    "title": "File:Togoshi ginza 2005 aug.jpg",
+    "alt": "戸越銀座商店街",
+    "caption": "戸越銀座商店街。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "togoshiginza-extra-8",
+    "station": "togoshiginza",
+    "title": "File:やさしく走ろうTOKYO (10677398155).jpg",
+    "alt": "戸越銀座の商店街と通り",
+    "caption": "戸越銀座の商店街と通り。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "nakanobu-extra-9",
+    "station": "nakanobu",
+    "title": "File:Nakanobu skip road 2019.jpg",
+    "alt": "中延スキップロードの入口",
+    "caption": "中延スキップロードの入口。",
+    "include": true
+  },
+  {
+    "key": "nakanobu-extra-10",
+    "station": "nakanobu",
+    "title": "File:Nakanobu skip road shinagawa.JPG",
+    "alt": "中延スキップロードの通り",
+    "caption": "中延スキップロードの通り。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "hatanodai-extra-11",
+    "station": "hatanodai",
+    "title": "File:Hatanodai Station - Tokyo 2026 June 17 various 01.jpg",
+    "alt": "旗の台駅の池上線ホーム",
+    "caption": "旗の台駅の池上線ホーム。",
+    "include": true
+  },
+  {
+    "key": "hatanodai-extra-12",
+    "station": "hatanodai",
+    "title": "File:Hatanodai Station - Tokyo 2026 June 17 various 02.jpg",
+    "alt": "旗の台駅前",
+    "caption": "旗の台駅前。",
+    "include": true
+  },
+  {
+    "key": "ookayama-extra-13",
+    "station": "ookayama",
+    "title": "File:Street views near Oookayama 12.jpg",
+    "alt": "大岡山周辺の通り",
+    "caption": "大岡山周辺の通り。",
+    "include": true
+  },
+  {
+    "key": "ookayama-extra-14",
+    "station": "ookayama",
+    "title": "File:Ookayama 1-chome.jpg",
+    "alt": "大岡山一丁目の街並み",
+    "caption": "大岡山一丁目の街並み。",
+    "include": true
+  },
+  {
+    "key": "jiyugaoka-extra-15",
+    "station": "jiyugaoka",
+    "title": "File:Street views in Jiyugaoka 10.jpg",
+    "alt": "自由が丘周辺の通り",
+    "caption": "自由が丘周辺の通り。",
+    "include": true
+  },
+  {
+    "key": "jiyugaoka-extra-16",
+    "station": "jiyugaoka",
+    "title": "File:Street views in Jiyugaoka 17.jpg",
+    "alt": "自由が丘周辺の街並み",
+    "caption": "自由が丘周辺の街並み。",
+    "include": true
+  },
+  {
+    "key": "keikyu-kamata-extra-17",
+    "station": "keikyu-kamata",
+    "title": "File:Keikyu-Kamata-Sta-E.JPG",
+    "alt": "京急蒲田駅東口",
+    "caption": "京急蒲田駅東口。撮影当時の記録で、建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "kawasaki-extra-18",
+    "station": "kawasaki",
+    "title": "File:LAZONA-Kawasaki Toshiba-Building.jpg",
+    "alt": "川崎駅西口のラゾーナ川崎",
+    "caption": "川崎駅西口のラゾーナ川崎。",
+    "include": true
+  },
+  {
+    "key": "kawasaki-extra-19",
+    "station": "kawasaki",
+    "title": "File:LAZONA-Kawasaki North-Outside.jpg",
+    "alt": "ラゾーナ川崎の北側外観",
+    "caption": "ラゾーナ川崎の北側外観。",
+    "include": true
+  },
+  {
+    "key": "musashikosugi-extra-20",
+    "station": "musashikosugi",
+    "title": "File:View from Kosugi Core Park.jpg",
+    "alt": "こすぎコアパークからの眺め",
+    "caption": "こすぎコアパークからの眺め。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "musashikosugi-extra-21",
+    "station": "musashikosugi",
+    "title": "File:LaLa terrace Musashi-Kosugi.jpg",
+    "alt": "ららテラス武蔵小杉",
+    "caption": "ららテラス武蔵小杉。撮影当時の記録で、店舗・建物の現況は要確認。",
+    "include": true
+  },
+  {
+    "key": "yokohama-extra-22",
+    "station": "yokohama",
+    "title": "File:Yokohama Station west exit 2023 September 19 various.jpeg",
+    "alt": "横浜駅西口の駅前",
+    "caption": "横浜駅西口の駅前。",
+    "include": true
+  },
+  {
+    "key": "yokohama-extra-23",
+    "station": "yokohama",
+    "title": "File:Gobangai, Yokohama Station West Entrance.jpg",
+    "alt": "横浜駅西口の五番街",
+    "caption": "横浜駅西口の五番街。",
+    "include": true
   }
 ]

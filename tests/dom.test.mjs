@@ -196,3 +196,12 @@ test('rent slider and number synchronize and removable selections update candida
  document.querySelector('[data-close-mobile]').click();assert(!document.querySelector('.mobile-conditions').open);
  dom.window.close();
 });
+
+test('station reasons remain visible below daily life while detailed sources can be opened', async()=>{
+ const {dom,document}=await openPage('station/osaki',{map:false});
+ const evidence=document.querySelector('#evidence');
+ assert(document.querySelector('#life').compareDocumentPosition(evidence)&dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+ const reason=evidence.querySelector('.condition-reason-heading p');assert(reason.textContent.includes('山手線'));
+ const details=evidence.querySelector('details.evidence-condition');assert.equal(details.open,false);details.querySelector('summary').click();assert.equal(details.open,true);assert(details.querySelector('a[href^="https://"]'));
+ dom.window.close();
+});

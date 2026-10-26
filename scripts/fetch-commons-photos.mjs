@@ -9,7 +9,7 @@ const requestedKeys = new Set(process.argv.slice(2));
 const manifest = requestedKeys.size ? fullManifest.filter((item) => requestedKeys.has(item.key)) : fullManifest;
 const outputDirectory = path.join(root, "public", "images");
 const metadataPath = path.join(root, "scripts", "commons-photo-metadata.generated.json");
-const allowedLicenses = new Set(["CC0", "CC BY 4.0", "CC BY-SA 4.0", "CC BY-SA 3.0", "CC BY 3.0"]);
+const allowedLicenses = new Set(["CC0", "CC BY 4.0", "CC BY-SA 4.0", "CC BY-SA 3.0", "CC BY 3.0", "CC BY 2.0", "CC BY-SA 2.0"]);
 
 const plainText = (value = "") => value
   .replace(/<br\s*\/?>/gi, " ")

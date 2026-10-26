@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=53";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=53";
-import { evidenceHtml } from "/assets/evidence-view.js?v=53";
+import { ATLAS_DATA } from "/assets/data.js?v=54";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=54";
+import { evidenceHtml } from "/assets/evidence-view.js?v=54";
 
 (() => {
   "use strict";
@@ -694,9 +694,8 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=53";
       </section>
       <nav class="station-lenses" aria-label="暮らし別に探す"><span>関連する暮らしの条件</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/themes/">暮らし別の一覧</a></nav>
       <div class="station-body">
-        <aside class="station-index"><h2>目次</h2><ol><li><a href="#evidence">条件の根拠・出典</a></li><li><a href="#viewpoint">特徴と確認点</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">暮らしのポイント</a></li><li><a href="#related">近い候補</a></li></ol></aside>
+        <aside class="station-index"><h2>目次</h2><ol><li><a href="#viewpoint">特徴と確認点</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">暮らしのポイント</a></li><li><a href="#evidence">条件の根拠・出典</a></li><li><a href="#related">近い候補</a></li></ol></aside>
         <article class="station-content">
-          ${evidenceHtml(station, ATLAS_DATA)}
           <section class="content-section" id="viewpoint"><p class="section-kicker">Station notes</p><h2>この駅の特徴と確認点。</h2>
             <div class="split-notes"><div class="split-note"><h3>この駅の強み</h3><ul>${editorial.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div><div class="split-note"><h3>住む前の確認点</h3><ul>${editorial.cautions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div></div>
           </section>
@@ -705,6 +704,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=53";
           <section class="content-section" id="life"><p class="section-kicker">Daily life</p><h2>暮らしのポイント。</h2><div class="life-grid">
             ${[["01", "交通", editorial.notes.transport], ["02", "日常の用事", editorial.notes.daily], ["03", "街の表情", editorial.notes.atmosphere], ["04", "休日と時間帯", editorial.notes.weekend], ["05", "1K家賃目安", rentCopy], ["06", "車と道路", practical.car], ["07", "夜の帰宅", practical.evening]].map(([number, title, copy]) => `<div class="life-note"><small>${number}</small><h3>${title}</h3><p>${escapeHtml(copy)}</p></div>`).join("")}
           </div></section>
+          ${evidenceHtml(station, ATLAS_DATA)}
           <section class="content-section" id="related"><p class="section-kicker">Keep alternatives</p><h2>一緒に見ておきたい駅。</h2><div class="related-list">${related.map((item) => `<a class="related-item" href="${stationUrl(item)}"><small>${escapeHtml(item.area)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.descriptor)}</p></a>`).join("")}</div></section>
         </article>
       </div>`;

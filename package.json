@@ -14,7 +14,8 @@
     "package": "npm run build && npm run check && npm run audit:content && node scripts/package.mjs",
     "routes:display": "node scripts/build-route-display-geometry.mjs && node scripts/embed-route-geometry.mjs",
     "photos:fetch": "node scripts/fetch-commons-photos.mjs",
-    "deploy": "npm run build && npx wrangler deploy"
+    "deploy": "npm run build && npx wrangler deploy",
+    "photos:sync": "node scripts/sync-photos.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4"
