@@ -1,5 +1,5 @@
 {
-  "version": "ekimachi-zufu-v52",
+  "version": "ekimachi-zufu-v53",
   "date": "2026-10-26",
   "stationCount": 15,
   "audit": {
@@ -10,14 +10,14 @@
     "pending": 0
   },
   "fingerprints": {
-    "assets/app.js": "2b383bd351c21ee4f57711505dbfce220cd831e5baa266d00969baa24c198730",
+    "assets/app.js": "d28607fb6c41cad845fcdb5f686a3bc8191ee41e325c7afa5bc84292c71a67b1",
     "assets/data.js": "0ffd43b813d3f659f88ecfb74026834004209364b3edd3872512b09802db7de8",
     "assets/evidence.js": "17b5107a32d44fcd9ac7c1f3fcd4cbe801b95af8d57590ae95ebc86c1d50efcf",
     "assets/audit-data.js": "50e08374388ee6026a6d63592c138dc2eb7b35f77fea9260be896fd33f9bc9b3",
-    "assets/evidence-view.js": "e94bb4d2fab48b403b797639f9755a78ff7f992aa5df14d27bbcc82d520b8bd4",
+    "assets/evidence-view.js": "ec59dee4f43a7dcd121330ace32e72be685bdaf1679a3d36c925202a8c089510",
     "assets/search.js": "6e6237cefeeb68cde227221cdce259783bc0e3cf092189e3387b6d29f5cd9921",
     "assets/style.css": "da03ab472869eec7db06fe2325b490dd5f1c6f35684dd4afddbed478950a2050",
-    "assets/interface-v34.css": "cfea97dd2e583b7be26f8ba55a8596b4b81329684d7c4590157376336e75c6f4",
-    "index.html": "7cf1879ea9973379f661a3cc27ab84dd0f3f49da263d397e0e35d9fb8e37fce7"
+    "assets/interface-v34.css": "eb4229c4af1189099dc3a2806fa0b7ee95678c96b81392152a7a270fc2cc0226",
+    "index.html": "609ba96ae258fb9293acc133b005fb8b8636da499c250e2d372f2b21d7339420"
   }
 }

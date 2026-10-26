@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=52";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=52";
-import { evidenceHtml } from "/assets/evidence-view.js?v=52";
+import { ATLAS_DATA } from "/assets/data.js?v=53";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=53";
+import { evidenceHtml } from "/assets/evidence-view.js?v=53";
 
 (() => {
   "use strict";
@@ -195,7 +195,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=52";
       filterList.querySelectorAll('[data-tag]').forEach(b=>b.classList.toggle('hobby-related',related.includes(b.dataset.tag)));
       filterList.querySelectorAll('.filter-group').forEach(group=>group.style.order=[...group.querySelectorAll('[data-tag]')].some(b=>related.includes(b.dataset.tag))?'-1':'0');
       const context=document.querySelector('#hobby-context');
-      if(context)context.textContent=selectedHobbies.size?`選択中：${hobbies.filter(h=>selectedHobbies.has(h[0])).map(h=>h[1]).join('・')}。関連条件を必須に設定しました。個別に調整できます。`:'複数選べます。選ぶと関連する条件がそのまま「必須」になります。';
+      if(context){context.hidden=!selectedHobbies.size;context.textContent=selectedHobbies.size?`選択中：${hobbies.filter(h=>selectedHobbies.has(h[0])).map(h=>h[1]).join('・')}`:'';}
     }
     function toggleHobby(id){
       if(selectedHobbies.has(id))selectedHobbies.delete(id);else selectedHobbies.add(id);
