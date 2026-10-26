@@ -167,7 +167,7 @@ test('relaxation shows correct count and changes only after clicking; comparison
 test('hobbies select required tags directly, combine and preserve individual adjustments',async()=>{
  const {dom,document,window}=await openPage('');
  document.querySelector('[data-hobby="reading"]').click();
- assert.equal(document.querySelector('dialog'),null);
+ assert.equal(document.querySelector('.hobby-dialog'),null);
  assert.equal(document.querySelector('[data-tag="library"]').dataset.priority,'required');
  assert.equal(document.querySelector('[data-tag="large_bookstore"]').dataset.priority,'required');
  document.querySelector('[data-hobby="movies"]').click();
@@ -181,5 +181,18 @@ test('hobbies select required tags directly, combine and preserve individual adj
  assert.equal(document.querySelector('[data-tag="cinema"]').dataset.priority,'required');
  assert.equal(new URL(window.location.href).searchParams.get('hobbies'),'movies');
  assert.equal(new URL(window.location.href).searchParams.get('autoRequired'),'cinema');
+ dom.window.close();
+});
+
+test('rent slider and number synchronize and removable selections update candidates',async()=>{
+ const {dom,document,window}=await openPage('');
+ const slider=document.querySelector('#rent-slider'),number=document.querySelector('#rent-max');
+ slider.value='13.7';slider.dispatchEvent(new window.Event('input',{bubbles:true}));
+ assert.equal(number.value,'13.7');assert.equal(new URL(window.location.href).searchParams.get('rent'),'13.7');
+ number.value='9.8';number.dispatchEvent(new window.Event('change',{bubbles:true}));assert.equal(slider.value,'9.8');
+ assert.equal(document.querySelectorAll('.station-row').length,ATLAS_DATA.stations.filter(s=>s.rent1k<=9.8).length);
+ document.querySelector('[data-remove-rent]').click();assert.equal(number.value,'');assert.equal(document.querySelectorAll('.station-row').length,15);
+ document.querySelector('#open-conditions').click();assert(document.querySelector('.mobile-conditions').open);
+ document.querySelector('[data-close-mobile]').click();assert(!document.querySelector('.mobile-conditions').open);
  dom.window.close();
 });

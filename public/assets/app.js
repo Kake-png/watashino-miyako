@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=48";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=48";
-import { evidenceHtml } from "/assets/evidence-view.js?v=48";
+import { ATLAS_DATA } from "/assets/data.js?v=49";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=49";
+import { evidenceHtml } from "/assets/evidence-view.js?v=49";
 
 (() => {
   "use strict";
@@ -450,7 +450,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=48";
       const stateFor=tag=>{const r=station.evidence[tag];return r.status==='pending'?'確認中':r.value?'○':'— 条件外';};
       return `<article class="station-result"><a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
         <span class="row-code">${preferredTags.size ? `${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}` : '候補'}</span>
-        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}
+        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}${!selected.length?`<p class="row-facts">${escapeHtml(station.descriptor)}</p>`:""}
         ${selected.length?`<span class="match-summary">${activeTags.size?`必須 ${[...activeTags].filter(t=>station.tags.includes(t)).length}/${activeTags.size}`:''}${activeTags.size&&preferredTags.size?' ・ ':''}${preferredTags.size?`あれば嬉しい ${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}`:''}</span><span class="selected-evidence">${selected.map(tag=>`<span class="condition-badge ${station.tags.includes(tag)?'is-match':'is-other'}">${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</span>`).join('')}</span>`:''}</span>
         <span class="row-status" aria-hidden="true">→</span>
       </a>${selected.length?`<details class="result-evidence"><summary>施設・場所と根拠を見る</summary><dl>${selected.map(tag=>`<div><dt>${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</dt><dd>${escapeHtml(station.evidence[tag].text||'確認できた情報は駅ページをご覧ください。')}</dd></div>`).join('')}</dl><a href="${stationUrl(station)}#evidence">出典・確認日を駅ページで見る</a></details>`:''}</article>`;
@@ -476,6 +476,10 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=48";
       const previousPageScroll = window.scrollY;
       const matches = currentMatches();
       const params = searchParamsFor(currentState());
+      const selectedBar=document.querySelector('#selected-conditions');
+      if(selectedBar)selectedBar.innerHTML=[...[...activeTags].map(t=>`<button type="button" data-remove-tag="${t}">${escapeHtml(tagLabels[t])}：必須 ×</button>`),...[...preferredTags].map(t=>`<button type="button" data-remove-tag="${t}">${escapeHtml(tagLabels[t])}：嬉しい ×</button>`),...[...activeRoutes].map(t=>`<button type="button" data-remove-route="${t}">${escapeHtml(routeLabels[t])} ×</button>`),...[...selectedThemes].map(t=>`<button type="button" data-remove-theme="${t}">${escapeHtml(themeById.get(t)?.navLabel||t)} ×</button>`),...(rentMax.value?[`<button type="button" data-remove-rent>参考相場 ${rentMax.value}万円以下 ×</button>`]:[])].join('');
+      const conditionsButton=document.querySelector('#open-conditions');if(conditionsButton)conditionsButton.textContent=`条件を変更（${activeTags.size+preferredTags.size+activeRoutes.size+selectedThemes.size+Number(Boolean(rentMax.value))}件）`;
+      const doneButton=document.querySelector('#apply-mobile-conditions');if(doneButton)doneButton.textContent=`${matches.length}駅の候補を見る`;
       try {localStorage.setItem('atlas-search-priorities',JSON.stringify({tags:[...activeTags],preferred:[...preferredTags]}));} catch {}
       history.replaceState(null, "", `${location.pathname}?${params}${location.hash}`);
       const visible = new Set(matches.map((station) => station.slug));
@@ -520,7 +524,12 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=48";
 
     stationList.addEventListener('click',event=>{const b=event.target.closest('[data-relax]');if(!b)return;manualTags.add(b.dataset.relax);automaticTags.delete(b.dataset.relax);activeTags.delete(b.dataset.relax);preferredTags.add(b.dataset.relax);syncTagButtons();applyFilters();});
     searchInput.addEventListener("input", applyFilters);
-    rentMax.addEventListener("change", applyFilters);
+    const rentSlider=document.querySelector('#rent-slider');
+    if(rentSlider){rentSlider.value=rentMax.value||'15';rentSlider.addEventListener('input',()=>{rentMax.value=rentSlider.value;applyFilters();});}
+    function syncRent(){if(rentMax.value){const n=Math.min(15,Math.max(5,Number(rentMax.value)));rentMax.value=String(Math.round(n*10)/10);if(rentSlider)rentSlider.value=rentMax.value;}applyFilters();}
+    rentMax.addEventListener('change',syncRent);
+    rentMax.addEventListener('input',()=>{if(rentMax.validity.valid){if(rentSlider && rentMax.value)rentSlider.value=rentMax.value;applyFilters();}});
+    document.querySelector('#clear-rent')?.addEventListener('click',()=>{rentMax.value='';applyFilters();});
     routeMatchMode.addEventListener("change", applyFilters);
     matchModeButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -549,6 +558,26 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=48";
     });
     applyFilters();
     renderHobbies();
+    document.querySelector('#selected-conditions')?.addEventListener('click',event=>{
+      const b=event.target.closest('button');if(!b)return;
+      if(b.dataset.removeTag){const t=b.dataset.removeTag;activeTags.delete(t);preferredTags.delete(t);automaticTags.delete(t);manualTags.add(t);syncTagButtons();}
+      if(b.dataset.removeRoute){activeRoutes.delete(b.dataset.removeRoute);chipByRoute.get(b.dataset.removeRoute)?.setAttribute('aria-pressed','false');}
+      if(b.dataset.removeTheme){selectedThemes.delete(b.dataset.removeTheme);perspectiveList.querySelector(`[data-perspective="${b.dataset.removeTheme}"]`)?.setAttribute('aria-pressed','false');updateThemeContext();}
+      if(b.hasAttribute('data-remove-rent'))rentMax.value='';
+      applyFilters();
+    });
+    const controls=document.querySelector('#search-controls');
+    const mobileDialog=document.createElement('dialog');mobileDialog.className='mobile-conditions';mobileDialog.setAttribute('aria-labelledby','mobile-conditions-title');
+    mobileDialog.innerHTML='<header><h2 id="mobile-conditions-title">検索条件</h2><button type="button" data-close-mobile>閉じる</button></header><div class="mobile-conditions-content"></div><footer><button type="button" id="apply-mobile-conditions" data-close-mobile>候補を見る</button></footer>';
+    document.body.append(mobileDialog);
+    const mobileMedia=window.matchMedia('(max-width: 720px)');
+    function closeMobile(){if(typeof mobileDialog.close==='function')mobileDialog.close();else mobileDialog.removeAttribute('open');document.body.classList.remove('conditions-open');document.querySelector('#open-conditions')?.focus({preventScroll:true});}
+    function arrangeControls(){if(!controls)return;if(mobileMedia.matches)mobileDialog.querySelector('.mobile-conditions-content').append(controls);else{closeMobile();document.querySelector('#selected-conditions').before(controls);}map?.invalidateSize();}
+    mobileMedia.addEventListener?.('change',arrangeControls);arrangeControls();
+    document.querySelector('#open-conditions')?.addEventListener('click',()=>{document.querySelector('#apply-mobile-conditions').textContent=`${currentMatches().length}駅の候補を見る`;if(typeof mobileDialog.showModal==='function')mobileDialog.showModal();else mobileDialog.setAttribute('open','');document.body.classList.add('conditions-open');});
+    mobileDialog.addEventListener('click',event=>{if(event.target.closest('[data-close-mobile]'))closeMobile();});
+    mobileDialog.addEventListener('cancel',()=>document.body.classList.remove('conditions-open'));
+    document.querySelectorAll('[data-result-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('.search-first').classList.toggle('is-map-view',b.dataset.resultView==='map');document.querySelectorAll('[data-result-view]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));map?.invalidateSize();}));
 
     const featuredStations = activeTheme
       ? stations.filter((station) => matchesTheme(station, activeTheme)).slice(0, 6)
