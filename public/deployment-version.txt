@@ -1,2 +1,2 @@
-ekimachi-zufu-v40
-2026-10-25
+ekimachi-zufu-v42
+2026-10-26

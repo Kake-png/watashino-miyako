@@ -1299,3 +1299,7 @@ body { font-size: 16px; }
 }
 
 .service-description{font-size:.9rem;line-height:1.7;color:#24352f;margin:.65rem 0 1rem}.brand strong{white-space:nowrap}
+
+.local-sponsors article {border:1px solid #1f4b43;padding:1rem;margin:1rem 0;}
+.analytics-choice {border:1px solid #1f4b43;padding:1rem;}
+.analytics-choice button,.analytics-choice a {margin:.4rem .8rem .4rem 0;}
