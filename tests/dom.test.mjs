@@ -128,8 +128,7 @@ test('hobby focus, priorities, URL reload and comparison keep selected condition
  document.querySelector('[data-hobby="reading"]').click();
  assert(document.querySelector('[data-tag="large_bookstore"]').classList.contains('hobby-related'));
  const book=document.querySelector('[data-tag="large_bookstore"]');
- let select=document.querySelector('[data-hobby-priority="large_bookstore"]');select.value='required';select.dispatchEvent(new window.Event('change',{bubbles:true}));
- select=document.querySelector('[data-hobby-priority="library"]');select.value='none';select.dispatchEvent(new window.Event('change',{bubbles:true}));
+ document.querySelector('#clear-filters').click();book.click();
  const movie=document.querySelector('[data-tag="cinema"]');movie.click();movie.click();
  assert.equal(book.dataset.priority,'required');assert.equal(movie.dataset.priority,'preferred');
  const expected=search.filterStations(ATLAS_DATA.stations,ATLAS_DATA.routeLabels,ATLAS_DATA.themePresets,{tags:['large_bookstore'],preferred:['cinema']});
@@ -165,21 +164,22 @@ test('relaxation shows correct count and changes only after clicking; comparison
  cmp.dom.window.close();
 });
 
-test('hobbies combine automatically, support modal edits, and preserve manual priorities when deselected',async()=>{
+test('hobbies select required tags directly, combine and preserve individual adjustments',async()=>{
  const {dom,document,window}=await openPage('');
  document.querySelector('[data-hobby="reading"]').click();
- assert(document.querySelector('.hobby-dialog').open);
- assert.equal(document.querySelector('[data-tag="library"]').dataset.priority,'preferred');
- document.querySelector('[data-dialog-hobby="movies"]').click();
+ assert.equal(document.querySelector('dialog'),null);
+ assert.equal(document.querySelector('[data-tag="library"]').dataset.priority,'required');
+ assert.equal(document.querySelector('[data-tag="large_bookstore"]').dataset.priority,'required');
+ document.querySelector('[data-hobby="movies"]').click();
  assert.equal(document.querySelector('[data-hobby="reading"]').getAttribute('aria-pressed'),'true');
  assert.equal(document.querySelector('[data-hobby="movies"]').getAttribute('aria-pressed'),'true');
- assert.equal(document.querySelector('[data-tag="cinema"]').dataset.priority,'preferred');
- const select=document.querySelector('[data-hobby-priority="large_bookstore"]');select.value='required';select.dispatchEvent(new window.Event('change',{bubbles:true}));
- document.querySelector('[data-dialog-hobby="reading"]').click();
- assert.equal(document.querySelector('[data-tag="large_bookstore"]').dataset.priority,'required');
+ assert.equal(document.querySelector('[data-tag="cinema"]').dataset.priority,'required');
+ document.querySelector('[data-tag="large_bookstore"]').click();
+ document.querySelector('[data-hobby="reading"]').click();
+ assert.equal(document.querySelector('[data-tag="large_bookstore"]').dataset.priority,'preferred');
  assert.equal(document.querySelector('[data-tag="library"]').dataset.priority,'none');
- assert.equal(document.querySelector('[data-tag="cinema"]').dataset.priority,'preferred');
+ assert.equal(document.querySelector('[data-tag="cinema"]').dataset.priority,'required');
  assert.equal(new URL(window.location.href).searchParams.get('hobbies'),'movies');
- document.querySelector('[data-close-hobbies]').click();assert(!document.querySelector('.hobby-dialog').open);
+ assert.equal(new URL(window.location.href).searchParams.get('autoRequired'),'cinema');
  dom.window.close();
 });

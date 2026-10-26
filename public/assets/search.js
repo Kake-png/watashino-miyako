@@ -47,7 +47,7 @@ export function readSearchState(params, data, defaults = {}) {
 export function searchParamsFor(state) {
   const params = new URLSearchParams();
   if (state.hobbies?.length) params.set("hobbies",state.hobbies.join(","));
-  if (state.autoWish?.length) params.set("autoWish",state.autoWish.join(","));
+  if (state.autoRequired?.length) params.set("autoRequired",state.autoRequired.join(","));
   if (state.preferred?.length) params.set("wish", state.preferred.join(","));
   if (state.query) params.set("q", state.query);
   if (state.tags.length) params.set("tags", state.tags.join(","));
