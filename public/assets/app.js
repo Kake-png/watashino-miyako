@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=45";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=45";
-import { evidenceHtml } from "/assets/evidence-view.js?v=45";
+import { ATLAS_DATA } from "/assets/data.js?v=46";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=46";
+import { evidenceHtml } from "/assets/evidence-view.js?v=46";
 
 (() => {
   "use strict";
@@ -432,11 +432,14 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=45";
       const nearbyNote = nearbySelected.length
         ? `<small class="nearby-route-note">近隣駅：${nearbySelected.map((route) => escapeHtml(routeLabels[route])).join("・")}</small>`
         : "";
-      return `<a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
+      const selected=[...activeTags,...preferredTags];
+      const stateFor=tag=>{const r=station.evidence[tag];return r.status==='pending'?'確認中':r.value?'○':'— 条件外';};
+      return `<article class="station-result"><a class="station-row" href="${stationUrl(station)}" data-slug="${station.slug}">
         <span class="row-code">${preferredTags.size ? `${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}` : '候補'}</span>
-        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}<span class="match-summary">${activeTags.size?`必須 ${[...activeTags].filter(t=>station.tags.includes(t)).length}/${activeTags.size} · `:''}${preferredTags.size?`あれば嬉しい ${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}`:''}</span><span class="selected-evidence">${[...activeTags,...preferredTags].map(tag=>{const record=station.evidence[tag];return `<span><strong>${escapeHtml(tagLabels[tag])}：${record.status==='pending'?'確認中':record.value?'○':'— 条件外'}</strong>${record.value?`<small>${escapeHtml(record.text)}</small>`:''}</span>`;}).join('')}</span></span>
+        <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}
+        ${selected.length?`<span class="match-summary">${activeTags.size?`必須 ${[...activeTags].filter(t=>station.tags.includes(t)).length}/${activeTags.size}`:''}${activeTags.size&&preferredTags.size?' ・ ':''}${preferredTags.size?`あれば嬉しい ${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}`:''}</span><span class="selected-evidence">${selected.map(tag=>`<span class="condition-badge ${station.tags.includes(tag)?'is-match':'is-other'}">${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</span>`).join('')}</span>`:''}</span>
         <span class="row-status" aria-hidden="true">→</span>
-      </a>`;
+      </a>${selected.length?`<details class="result-evidence"><summary>施設・場所と根拠を見る</summary><dl>${selected.map(tag=>`<div><dt>${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</dt><dd>${escapeHtml(station.evidence[tag].text||'確認できた情報は駅ページをご覧ください。')}</dd></div>`).join('')}</dl><a href="${stationUrl(station)}#evidence">出典・確認日を駅ページで見る</a></details>`:''}</article>`;
     }
 
     function currentMatches() {
