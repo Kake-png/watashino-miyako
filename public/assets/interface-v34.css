@@ -659,3 +659,8 @@ body,
 @media(max-width:720px){.site-header{display:flex!important;align-items:center;justify-content:space-between;min-height:60px;height:auto;padding:10px 16px;box-sizing:border-box}.site-header>.brand{min-width:0}.site-header>.nav-toggle{width:auto;min-width:64px;white-space:nowrap;flex-shrink:0;padding:8px}.site-header>.site-nav{position:absolute;top:100%;left:0;right:0;background:white;z-index:20}#selected-conditions{position:sticky;top:112px;z-index:7;max-height:105px;overflow:auto}.search-first .row-facts{font-size:12px;color:#183f39;margin-top:6px}}
 
 .rent-scale{display:flex;justify-content:space-between;width:100%;font-size:12px;color:#183f39;margin-top:-4px}
+
+/* 駅ガイドは写真の元サイズにかかわらず同じ高さにする */
+.search-first .feature-link .feature-image,.search-first .feature-link:nth-child(-n + 2) .feature-image{position:relative;display:block;width:100%;aspect-ratio:3/2;overflow:hidden;}
+.search-first .feature-link .feature-image img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;}
+.evidence-section .evidence-short{margin:0 0 6px;font-size:14px;line-height:1.7}.evidence-full>summary{cursor:pointer;font-size:13px;color:#183f39;padding:4px 0}.evidence-full p{font-size:14px;line-height:1.8}.evidence-full ul{padding-left:18px;font-size:13px;line-height:1.7}.evidence-full li{margin:6px 0;overflow-wrap:anywhere}.evidence-list>div{padding-block:12px!important}.rent-tick{position:relative;width:100%;height:20px;font-size:12px;color:#183f39;pointer-events:none;margin-top:-6px}.rent-tick span{position:absolute;left:66.225%;transform:translateX(-50%);white-space:nowrap}.rent-tick span:before{content:'';display:block;width:1px;height:6px;background:#183f39;margin:0 auto 2px}

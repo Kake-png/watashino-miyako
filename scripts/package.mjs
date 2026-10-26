@@ -14,7 +14,7 @@ function collect(relative) {
 entries.forEach(collect);
 const manifest = files.map((file) => `${createHash("sha256").update(fs.readFileSync(path.join(root, file))).digest("hex")}  ${file}`).join("\n") + "\n";
 fs.writeFileSync(path.join(root, "SOURCE-MANIFEST.sha256"), manifest);
-const archive = path.resolve(root, "../ekimachi-zufu-source-v51.zip");
+const archive = path.resolve(root, "../ekimachi-zufu-source-v52.zip");
 if (fs.existsSync(archive)) throw new Error(`Output exists; choose a fresh release filename: ${archive}`);
 const result = spawnSync("zip", ["-q", archive, ...files, "SOURCE-MANIFEST.sha256"], { cwd: root, stdio: "inherit" });
 if (result.status !== 0) process.exit(result.status || 1);

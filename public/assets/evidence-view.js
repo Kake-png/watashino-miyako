@@ -7,7 +7,9 @@ export function evidenceHtml(station, data) {
     <p>検索に使っている条件と、その根拠です。確認待ちの条件は検索に含めていません。</p>
     ${verified.length ? `<dl class="evidence-list">${verified.map((tag) => {
       const record = station.evidence[tag];
-      return `<div><dt>${escape(data.tagLabels[tag])}<small>確認 ${escape(record.checkedAt)}</small></dt><dd><p>${escape(record.text)}</p>${record.sourceIds.map((id) => `<a href="${escape(data.factSources[id].url)}" rel="external noopener">${escape(data.factSources[id].title)}</a>`).join(" / ")}</dd></div>`;
+      const firstSentence=record.text.split('。')[0];
+      const short=firstSentence.length>65?firstSentence.slice(0,65)+'…':firstSentence+'。';
+      return `<div><dt>${escape(data.tagLabels[tag])}<small>確認 ${escape(record.checkedAt)}</small></dt><dd><p class="evidence-short">${escape(short)}</p><details class="evidence-full"><summary>詳しい理由・出典</summary><p>${escape(record.text)}</p><ul>${record.sourceIds.map((id) => `<li><a href="${escape(data.factSources[id].url)}" rel="external noopener">${escape(data.factSources[id].title)}</a></li>`).join("")}</ul></details></dd></div>`;
     }).join("")}</dl>` : "<p>この駅の条件別出典は再確認中です。</p>"}
     ${negative.length ? `<details class="pending-evidence"><summary>調べた範囲で条件外（${negative.length}件）</summary><dl>${negative.map((tag) => `<div><dt>${escape(data.tagLabels[tag])}</dt><dd>${escape(station.evidence[tag].text)} <small>確認 ${escape(station.evidence[tag].checkedAt)}</small></dd></div>`).join("")}</dl><p>新設・小規模施設までの完全な網羅を保証するものではありません。</p></details>` : ""}
     ${pending.length ? `<details class="pending-evidence"><summary>確認待ちの条件（${pending.length}件）</summary><p>${pending.map((tag) => escape(data.tagLabels[tag])).join("・")}</p><p>施設の規模や入口までの経路などを確認中です。候補に含まれないことは、その施設が存在しないという意味ではありません。</p></details>` : ""}
