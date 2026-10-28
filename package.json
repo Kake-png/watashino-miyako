@@ -8,14 +8,16 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/validate.mjs && node --test tests/*.test.mjs && node scripts/check-rebuild.mjs",
+    "check": "node scripts/station-ledger.mjs --check && node scripts/validate.mjs && node --test tests/*.test.mjs && node scripts/check-rebuild.mjs",
     "test": "node --test tests/*.test.mjs",
     "audit:content": "node scripts/audit-report.mjs",
     "package": "npm run build && npm run check && npm run audit:content && node scripts/package.mjs",
     "routes:display": "node scripts/build-route-display-geometry.mjs && node scripts/embed-route-geometry.mjs",
     "photos:fetch": "node scripts/fetch-commons-photos.mjs",
     "deploy": "npm run build && npx wrangler deploy",
-    "photos:sync": "node scripts/sync-photos.mjs"
+    "photos:sync": "node scripts/sync-photos.mjs",
+    "stations:ledger": "node scripts/station-ledger.mjs",
+    "stations:check": "node scripts/station-ledger.mjs --check"
   },
   "dependencies": {
     "leaflet": "^1.9.4"

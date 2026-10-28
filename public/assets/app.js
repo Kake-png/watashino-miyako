@@ -1,6 +1,6 @@
-import { ATLAS_DATA } from "/assets/data.js?v=54";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=54";
-import { evidenceHtml } from "/assets/evidence-view.js?v=54";
+import { ATLAS_DATA } from "/assets/data.js?v=56";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=56";
+import { evidenceHtml } from "/assets/evidence-view.js?v=56";
 
 (() => {
   "use strict";
@@ -19,6 +19,25 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
   const stationUrl = (station) => `/station/${encodeURIComponent(station.slug)}/`;
   const themeUrl = (theme) => `/themes/${encodeURIComponent(theme.id)}/`;
   const imageUrl = (photo) => photo ? `/${String(photo.file).replace(/^\/+/, "")}` : "";
+
+  const favoriteKey = "atlas-favorite-stations-v1";
+  let favorites = new Set();
+  try { const stored=JSON.parse(localStorage.getItem(favoriteKey)||"[]"); if(Array.isArray(stored))favorites=new Set(stored.filter(id=>stationBySlug.has(id))); } catch {}
+  function favoriteHtml(station){const saved=favorites.has(station.slug);return `<button type="button" class="favorite-button" data-favorite="${station.slug}" aria-pressed="${saved}" aria-label="${escapeHtml(station.name)}駅を気になる駅${saved?'から外す':'に保存'}"><span aria-hidden="true">${saved?'★':'☆'}</span><span class="favorite-label">${saved?'保存済み':'気になる'}</span></button>`;}
+  function syncFavoriteButtons(){
+    document.querySelectorAll('[data-favorite]').forEach(button=>{const station=stationBySlug.get(button.dataset.favorite);if(!station)return;const saved=favorites.has(station.slug);button.setAttribute('aria-pressed',String(saved));button.setAttribute('aria-label',`${station.name}駅を気になる駅${saved?'から外す':'に保存'}`);button.querySelector('span').textContent=saved?'★':'☆';button.querySelector('.favorite-label').textContent=saved?'保存済み':'気になる';});
+    const filter=document.querySelector('#favorites-only');if(filter)filter.textContent=`☆ 気になる駅（${favorites.size}）`;
+  }
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('[data-favorite]');if(!button)return;
+    const id=button.dataset.favorite;if(!stationBySlug.has(id))return;
+    if(favorites.has(id))favorites.delete(id);else favorites.add(id);
+    let persisted=true;try{localStorage.setItem(favoriteKey,JSON.stringify([...favorites]));}catch{persisted=false;}
+    syncFavoriteButtons();document.dispatchEvent(new Event('favorites-changed'));
+    let status=document.querySelector('#favorite-status');if(!status){status=document.createElement('p');status.id='favorite-status';status.setAttribute('role','status');document.body.append(status);}
+    status.className=persisted?'sr-only':'favorite-storage-note';status.textContent=persisted?`${stationBySlug.get(id).name}駅を${favorites.has(id)?'保存しました':'保存から外しました'}`:'このブラウザでは保存できません。ページを閉じると選択は消えます。';
+  });
+  window.addEventListener('storage',event=>{if(event.key!==favoriteKey&&event.key!==null)return;try{const value=JSON.parse(localStorage.getItem(favoriteKey)||'[]');favorites=new Set(Array.isArray(value)?value.filter(id=>stationBySlug.has(id)):[]);}catch{favorites=new Set();}syncFavoriteButtons();document.dispatchEvent(new Event('favorites-changed'));});
 
   function readCompare() {
     try {
@@ -76,7 +95,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
       keyboard: true,
       title: `${station.name}駅`
     });
-    if (popup) marker.bindPopup(popupHtml(station), { offset: [0, -10], closeButton: false });
+    if (popup) { marker.bindPopup(popupHtml(station), { offset: [0, -10], closeButton: false }); marker.on("popupopen",syncFavoriteButtons); }
     return marker;
   }
 
@@ -85,7 +104,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
       <small>${escapeHtml(station.area)}の駅ガイド</small>
       <h3>${escapeHtml(station.name)}</h3>
       <p>${escapeHtml(station.descriptor)}</p>
-      <a href="${stationUrl(station)}">駅の詳細を見る →</a>
+      ${favoriteHtml(station)}<a href="${stationUrl(station)}">駅の詳細を見る →</a>
     </div>`;
   }
 
@@ -130,6 +149,11 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
     const filterList = document.querySelector("#filter-list");
     const searchInput = document.querySelector("#station-search");
     const stationList = document.querySelector("#station-list");
+    let favoritesOnly=false;
+    const favoritesFilter=document.createElement('button');favoritesFilter.type='button';favoritesFilter.id='favorites-only';favoritesFilter.setAttribute('aria-pressed','false');
+    document.querySelector('.result-summary').append(favoritesFilter);syncFavoriteButtons();
+    favoritesFilter.addEventListener('click',()=>{favoritesOnly=!favoritesOnly;favoritesFilter.setAttribute('aria-pressed',String(favoritesOnly));applyFilters();});
+    document.addEventListener('favorites-changed',()=>applyFilters());
     const atlasPanel = document.querySelector(".atlas-panel");
     const resultCount = document.querySelector("#result-count");
     const featuredGrid = document.querySelector("#featured-grid");
@@ -453,12 +477,12 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
         <span><h3>${escapeHtml(station.name)}</h3><p>${escapeHtml(station.area)} · ${escapeHtml(station.lines.join(" / "))}</p>${nearbyNote}${!selected.length?`<p class="row-facts">${escapeHtml(station.descriptor)}</p>`:""}
         ${selected.length?`<span class="match-summary">${activeTags.size?`必須 ${[...activeTags].filter(t=>station.tags.includes(t)).length}/${activeTags.size}`:''}${activeTags.size&&preferredTags.size?' ・ ':''}${preferredTags.size?`あれば嬉しい ${[...preferredTags].filter(t=>station.tags.includes(t)).length}/${preferredTags.size}`:''}</span><span class="selected-evidence">${selected.map(tag=>`<span class="condition-badge ${station.tags.includes(tag)?'is-match':'is-other'}">${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</span>`).join('')}</span>`:''}</span>
         <span class="row-status" aria-hidden="true">→</span>
-      </a>${selected.length?`<details class="result-evidence"><summary>施設・場所と根拠を見る</summary><dl>${selected.map(tag=>`<div><dt>${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</dt><dd>${escapeHtml(station.evidence[tag].text||'確認できた情報は駅ページをご覧ください。')}</dd></div>`).join('')}</dl><a href="${stationUrl(station)}#evidence">出典・確認日を駅ページで見る</a></details>`:''}</article>`;
+      </a>${favoriteHtml(station)}${selected.length?`<details class="result-evidence"><summary>施設・場所と根拠を見る</summary><dl>${selected.map(tag=>`<div><dt>${escapeHtml(tagLabels[tag])} ${stateFor(tag)}</dt><dd>${escapeHtml(station.evidence[tag].text||'確認できた情報は駅ページをご覧ください。')}</dd></div>`).join('')}</dl><a href="${stationUrl(station)}#evidence">出典・確認日を駅ページで見る</a></details>`:''}</article>`;
     }
 
     function currentMatches() {
       const selectedTags = [...activeTags];
-      const matches = filterStations(stations, routeLabels, themePresets, currentState());
+      const matches = filterStations(stations, routeLabels, themePresets, currentState()).filter(station=>!favoritesOnly||favorites.has(station.slug));
       if (!preferredTags.size && selectedTags.length && matchMode.value === "any") {
         matches.sort((a, b) => themeScore(b, selectedTags) - themeScore(a, selectedTags));
       }
@@ -498,7 +522,8 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
       stationList.innerHTML = matches.length
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">確認済みの候補は0駅です。確認中の駅もあるため、該当する場所がないという意味ではありません。条件を一つ外して探せます。</p>';
-      if(!matches.length){
+      if(!matches.length && favoritesOnly){stationList.innerHTML=`<p class="station-list-empty">${favorites.size?'保存した駅に、今の条件に合う駅がありません。条件を見直すか、☆の絞り込みを解除してください。':'気になる駅はまだありません。一覧や駅ページの☆を押して保存できます。'}</p>`;}
+      if(!matches.length && !favoritesOnly){
         const suggestions=[...activeTags].map(tag=>({tag,count:filterStations(stations,routeLabels,themePresets,{...currentState(),tags:[...activeTags].filter(t=>t!==tag)}).length})).filter(x=>x.count>0);
         stationList.innerHTML+=suggestions.map(({tag,count})=>`<button type="button" class="relax-condition" data-relax="${escapeHtml(tag)}">「${escapeHtml(tagLabels[tag])}」を必須から外すと${count}駅</button>`).join('');
         if(!suggestions.length) stationList.innerHTML+='<p>路線・家賃・駅名も含めて条件を見直してください。</p>';
@@ -680,7 +705,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=54";
           <div class="station-meta">${station.lines.map((line) => `<span class="line-label">${escapeHtml(line)}</span>`).join("")}</div>
           <h1>${escapeHtml(station.name)}</h1><p class="station-kana">${escapeHtml(station.kana)} · ${escapeHtml(station.area)}</p>
           <p class="station-descriptor">${escapeHtml(station.descriptor)}</p><p class="station-summary">${escapeHtml(station.summary)}</p>
-          <div class="hero-actions"><button class="button" type="button" data-compare-toggle="${station.slug}">比較に追加</button><a class="button secondary" href="/compare/">比較表を見る</a></div>
+          <div class="hero-actions">${favoriteHtml(station)}<button class="button" type="button" data-compare-toggle="${station.slug}">比較に追加</button><a class="button secondary" href="/compare/">比較表を見る</a></div>
         </div>
         ${leadPhoto ? `<figure class="station-lead-photo">
           <img src="${escapeHtml(imageUrl(leadPhoto))}" alt="${escapeHtml(leadPhoto.alt)}" width="1200" height="900">

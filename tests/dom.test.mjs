@@ -11,7 +11,7 @@ const app = fs.readFileSync(path.join(publicRoot, "assets/app.js"), "utf8").repl
 const leaflet = fs.readFileSync(path.join(publicRoot, "vendor/leaflet.js"), "utf8");
 const tick = () => new Promise((resolve) => setTimeout(resolve, 35));
 
-async function openPage(route, { map = true } = {}) {
+async function openPage(route, { map = true, storage = {} } = {}) {
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", (error) => errors.push(error.message));
@@ -21,6 +21,7 @@ async function openPage(route, { map = true } = {}) {
   const window = dom.window;
   window.matchMedia = () => ({ matches: true });
   window.scrollTo = () => {};
+  for(const [key,value] of Object.entries(storage))window.localStorage.setItem(key,value);
   window.ATLAS_DATA = ATLAS_DATA;
   Object.assign(window, search, { evidenceHtml });
   Object.defineProperties(window.HTMLElement.prototype, {
@@ -204,4 +205,33 @@ test('station reasons remain visible below daily life while detailed sources can
  const reason=evidence.querySelector('.condition-reason-heading p');assert(reason.textContent.includes('山手線'));
  const details=evidence.querySelector('details.evidence-condition');assert.equal(details.open,false);details.querySelector('summary').click();assert.equal(details.open,true);assert(details.querySelector('a[href^="https://"]'));
  dom.window.close();
+});
+
+
+test('favorites persist across pages, intersect filters and can be removed from saved view',async()=>{
+ const first=await openPage('',{map:false});
+ first.document.querySelector('[data-favorite="kamata"]').click();
+ first.document.querySelector('[data-favorite="omori"]').click();
+ const saved=first.window.localStorage.getItem('atlas-favorite-stations-v1');
+ first.document.querySelector('#favorites-only').click();
+ assert.equal(first.document.querySelectorAll('.station-row').length,2);
+ first.document.querySelector('[data-tag="cinema"]').click();
+ assert.equal(first.document.querySelectorAll('.station-row').length,1);
+ assert.equal(first.document.querySelector('.station-row').dataset.slug,'omori');
+ first.document.querySelector('[data-favorite="omori"]').click();
+ assert.equal(first.document.querySelectorAll('.station-row').length,0);
+ assert(first.document.querySelector('#station-list').textContent.includes('条件に合う駅がありません'));
+ first.dom.window.close();
+ const second=await openPage('station/kamata',{map:false,storage:{'atlas-favorite-stations-v1':saved}});
+ assert.equal(second.document.querySelector('[data-favorite="kamata"]').getAttribute('aria-pressed'),'true');
+ second.document.querySelector('[data-favorite="kamata"]').click();
+ assert.deepEqual(JSON.parse(second.window.localStorage.getItem('atlas-favorite-stations-v1')),['omori']);second.dom.window.close();
+});
+
+test('favorites tolerate malformed storage and synchronize other tabs',async()=>{
+ const {dom,document,window}=await openPage('',{map:false,storage:{'atlas-favorite-stations-v1':'{"broken":true}'}});
+ document.querySelector('#favorites-only').click();assert(document.querySelector('#station-list').textContent.includes('まだありません'));
+ window.localStorage.setItem('atlas-favorite-stations-v1','["osaki","unknown"]');
+ window.dispatchEvent(new window.StorageEvent('storage',{key:'atlas-favorite-stations-v1'}));
+ assert.equal(document.querySelectorAll('.station-row').length,1);assert.equal(document.querySelector('.station-row').dataset.slug,'osaki');dom.window.close();
 });
