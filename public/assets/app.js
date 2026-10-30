@@ -1,6 +1,7 @@
-import { ATLAS_DATA } from "/assets/data.js?v=56";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=56";
-import { evidenceHtml } from "/assets/evidence-view.js?v=56";
+import {ROUTE_LANES,offsetRoutePoints} from "/assets/route-layout.js?v=58";
+import { ATLAS_DATA } from "/assets/data.js?v=58";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=58";
+import { evidenceHtml } from "/assets/evidence-view.js?v=58";
 
 (() => {
   "use strict";
@@ -351,14 +352,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=56";
     }
 
     const coordinateKey = ([lng, lat]) => `${lng},${lat}`;
-    const routeDisplayOffsets = new Map([
-      ["jr-keihin-tohoku", -6],
-      ["jr-tokaido", 0],
-      ["jr-shonan-shinjuku", 6],
-      ["jr-yokosuka", 12],
-      ["jr-yamanote", -4],
-      ["jr-saikyo", 4]
-    ]);
+
 
     function mergeConnectedLines(lines) {
       const remaining = lines.map((line) => [...line]);
@@ -409,29 +403,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=56";
       const points = leaflet.LineUtil?.simplify
         ? leaflet.LineUtil.simplify(rawPoints, simplifyTolerance)
         : rawPoints;
-      const offset = routeDisplayOffsets.get(routeId) || 0;
-      if (!offset) return points.map((point) => map.layerPointToLatLng(point));
-      const segmentVectors = [];
-
-      // points は上で間引かれているため、元データではなく points の点数を使う。
-      // 元データの点数で回すと、補正のある路線だけ未定義点を参照して描画が止まる。
-      for (let index = 1; index < points.length; index += 1) {
-        const startPoint = points[index - 1];
-        const endPoint = points[index];
-        const dx = endPoint.x - startPoint.x;
-        const dy = endPoint.y - startPoint.y;
-        const length = Math.hypot(dx, dy) || 1;
-        segmentVectors.push({ x: (-dy / length) * offset, y: (dx / length) * offset });
-      }
-
-      return points.map((point, index) => {
-        const previous = segmentVectors[index - 1];
-        const next = segmentVectors[index];
-        const count = Number(Boolean(previous)) + Number(Boolean(next));
-        const x = point.x + ((previous?.x || 0) + (next?.x || 0)) / count;
-        const y = point.y + ((previous?.y || 0) + (next?.y || 0)) / count;
-        return map.layerPointToLatLng([x, y]);
-      });
+      return offsetRoutePoints(points, ROUTE_LANES[routeId] || 0).map(point=>map.layerPointToLatLng([point.x,point.y]));
     }
 
     function syncRouteLines() {
@@ -454,7 +426,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=56";
           if (displayCoordinates.length < 2) return [];
           return [leaflet.polyline(
             displayCoordinates,
-            { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 1.2, interactive: false }
+            { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 0, interactive: false }
           )];
         });
         if (!lines.length) return;

@@ -1,3 +1,4 @@
+import {ROUTE_LANES,offsetRoutePoints} from "../public/assets/route-layout.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -23,7 +24,7 @@ async function openPage(route, { map = true, storage = {} } = {}) {
   window.scrollTo = () => {};
   for(const [key,value] of Object.entries(storage))window.localStorage.setItem(key,value);
   window.ATLAS_DATA = ATLAS_DATA;
-  Object.assign(window, search, { evidenceHtml });
+  Object.assign(window, search, { evidenceHtml, ROUTE_LANES, offsetRoutePoints });
   Object.defineProperties(window.HTMLElement.prototype, {
     clientWidth: { get() { return this.id.includes("map") ? 900 : 490; } },
     clientHeight: { get() { return 700; } }

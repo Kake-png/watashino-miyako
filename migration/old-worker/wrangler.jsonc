@@ -1,0 +1,6 @@
+{
+  "name": "watashino-miyako",
+  "main": "redirect.mjs",
+  "compatibility_date": "2026-10-28",
+  "workers_dev": true
+}

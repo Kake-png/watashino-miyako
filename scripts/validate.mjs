@@ -11,7 +11,7 @@ const errors = [];
 const slugs = new Set();
 
 const wrangler = JSON.parse(fs.readFileSync(path.join(projectRoot, "wrangler.jsonc"), "utf8"));
-if (wrangler.name !== "watashino-miyako") errors.push("Wrangler targets the wrong Worker name");
+if (wrangler.name !== "machierabi-annai") errors.push("Wrangler targets the wrong Worker name");
 if (wrangler.assets?.directory !== "./public") errors.push("Wrangler must deploy ./public as static assets");
 if (wrangler.main) errors.push("Static-only Worker must not define a main script");
 if (wrangler.assets?.binding) errors.push("Static-only Worker must not define an assets binding");
@@ -94,13 +94,13 @@ if (!revisionCss.includes("width: 3px;")) errors.push("Section heading rail is m
 if (!revisionCss.includes(".search-first .condition-drawer > summary { margin-top: 7px; }")) errors.push("Condition section spacing is missing");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('href="/assets/interface-v34.css?v=56"')) errors.push("Home is missing the versioned interface stylesheet");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=56"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('href="/assets/interface-v34.css?v=58"')) errors.push("Home is missing the versioned interface stylesheet");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=58"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");
 if (!indexHtml.includes('id="route-match-mode"')) errors.push("Home is missing the route match mode");
-if (!appSource.includes('from "/assets/data.js?v=56"')) errors.push("App is missing the versioned data module import");
+if (!appSource.includes('from "/assets/data.js?v=58"')) errors.push("App is missing the versioned data module import");
 for (const retiredCss of ["revision.css", "interface-v31.css", "interface-v32.css", "interface-v33.css"]) {
   if (fs.existsSync(path.join(publicRoot, "assets", retiredCss))) errors.push(`Retired stylesheet is still present: ${retiredCss}`);
 }
@@ -109,11 +109,11 @@ if (!revisionCss.includes(".compare-title {\n  border-bottom: 1px solid var(--ru
 if (!revisionCss.includes(".station-lenses {\n  border-block: 1px solid var(--rule);\n  background: #fff;")) errors.push("Station navigation still uses a large color field");
 if (!appSource.includes('map.getPane("tilePane").style.filter')) errors.push("Map is missing the light tile treatment");
 if (!appSource.includes('leaflet.LineUtil.simplify')) errors.push("Route display is missing low-zoom simplification");
-if (!appSource.includes('index < points.length')) errors.push("Offset route loop must use simplified point count");
+if (!appSource.includes('offsetRoutePoints(points,')) errors.push("Offset route helper must use simplified points");
 if (!appSource.includes('Route display fallback')) errors.push("Route display is missing a safe fallback");
 if (appSource.includes("const casing =")) errors.push("Route display still draws a separate white casing line");
 if (!appSource.includes("offsetRouteCoordinates")) errors.push("Route display is missing overlap offsets");
-if (!appSource.includes("routeDisplayOffsets")) errors.push("Route display is missing fixed display lanes");
+if (!appSource.includes('from "/assets/route-layout.js?v=58"')) errors.push("Route display is missing versioned fixed display lanes");
 if (!appSource.includes("mergeConnectedLines")) errors.push("Route display is missing connected-line merging");
 if (appSource.includes("selectedSegmentRoutes") || appSource.includes("selectedCorridorOffsets")) errors.push("Route display still depends on the selected route combination");
 if (appSource.includes('fetch("/assets/route-geometry')) errors.push("Route geometry must not be a required external fetch");
@@ -165,7 +165,7 @@ for (const file of ["themes/index.html", "routes/index.html", "stations/index.ht
   if (!fs.existsSync(path.join(publicRoot, file))) errors.push(`Missing release asset: ${file}`);
 }
 const sitemap = fs.readFileSync(path.join(publicRoot, "sitemap.xml"), "utf8");
-for (const match of sitemap.matchAll(/<loc>https:\/\/watashino-miyako\.kake-web\.workers\.dev([^<]+)<\/loc>/g)) {
+for (const match of sitemap.matchAll(/<loc>https:\/\/machierabi-annai\.kake-web\.workers\.dev([^<]+)<\/loc>/g)) {
   if (!fs.existsSync(path.join(publicRoot, match[1], "index.html"))) errors.push(`Sitemap points to missing page: ${match[1]}`);
 }
 

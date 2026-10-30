@@ -9,7 +9,7 @@ import { createHash } from "node:crypto";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 syncAudit(root);
 const { ATLAS_DATA } = await import("../public/assets/data.js");
-const siteOrigin = (process.env.SITE_ORIGIN || "https://watashino-miyako.kake-web.workers.dev").replace(/\/$/, "");
+const siteOrigin = (process.env.SITE_ORIGIN || "https://machierabi-annai.kake-web.workers.dev").replace(/\/$/, "");
 const originUrl = new URL(siteOrigin);
 if (originUrl.protocol !== "https:" || originUrl.pathname !== "/" || originUrl.search || originUrl.hash) throw new Error("SITE_ORIGIN must be a plain HTTPS origin");
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({
@@ -40,8 +40,8 @@ const templates = path.join(root, "templates");
 const publishedPages = new Map();
 function finalizeHtml(html, relativePath) {
   const url = `${siteOrigin}/${relativePath ? `${relativePath.replaceAll(path.sep, "/")}/` : ""}`;
-  html = html.replaceAll("?v=54", "?v=56").replaceAll("?v=53", "?v=56").replaceAll("?v=52", "?v=56").replaceAll("?v=51", "?v=56").replaceAll("?v=50", "?v=56").replaceAll("?v=49", "?v=56").replaceAll("?v=48", "?v=56").replaceAll("?v=47", "?v=56").replaceAll("?v=46", "?v=56").replaceAll("?v=45", "?v=56").replaceAll("?v=44", "?v=56").replaceAll("?v=40", "?v=56").replaceAll("?v=34", "?v=56")
-    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=56"')
+  html = html.replaceAll("?v=57", "?v=58").replaceAll("?v=56", "?v=58").replaceAll("?v=54", "?v=58").replaceAll("?v=53", "?v=58").replaceAll("?v=52", "?v=58").replaceAll("?v=51", "?v=58").replaceAll("?v=50", "?v=58").replaceAll("?v=49", "?v=58").replaceAll("?v=48", "?v=58").replaceAll("?v=47", "?v=58").replaceAll("?v=46", "?v=58").replaceAll("?v=45", "?v=58").replaceAll("?v=44", "?v=58").replaceAll("?v=40", "?v=58").replaceAll("?v=34", "?v=58")
+    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=58"')
     .replaceAll("https://tiles.openfreemap.org", "https://tile.openstreetmap.org");
   html = html.replace("制定・最終更新：2026年9月21日", "制定：2026年9月21日・最終更新：2026年10月17日")
     .replace("駅徒歩10分以内・管理費等を除く平均", "HOME’Sの1K参考相場・管理費等を除く")
@@ -133,8 +133,8 @@ for (const theme of ATLAS_DATA.themePresets) {
   const html = homeTemplate
     .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(theme.title)}｜街えらび案内所</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHtml(theme.description)}">`)
-    .replace('<link rel="canonical" href="https://watashino-miyako.kake-web.workers.dev/">', `<link rel="canonical" href="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
-    .replace('<meta property="og:url" content="https://watashino-miyako.kake-web.workers.dev/">', `<meta property="og:url" content="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
+    .replace('<link rel="canonical" href="https://machierabi-annai.kake-web.workers.dev/">', `<link rel="canonical" href="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
+    .replace('<meta property="og:url" content="https://machierabi-annai.kake-web.workers.dev/">', `<meta property="og:url" content="${siteOrigin}/themes/${encodeURIComponent(theme.id)}/">`)
     .replace('id="atlas-title">好きなことを、続けやすい街へ。', `id="atlas-title">${escapeHtml(theme.title)}`)
     .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy" aria-labelledby="theme-static-title"><h2 id="theme-static-title">${escapeHtml(theme.title)}：候補と確認点</h2><p>${escapeHtml(theme.description)}</p><p>次のいずれかに該当する駅を表示します：${escapeHtml(theme.criteria.join("、"))}。複数の「求める生活」を選んだ場合は、各テーマの条件をそれぞれ満たす駅に絞ります。</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/criteria/">具体的な判定基準</a> · <a href="/themes/">暮らし別の一覧</a></p></section>`)
     .replace('<body data-page="home">', `<body data-page="home" data-theme-id="${escapeHtml(theme.id)}">`)
@@ -190,9 +190,9 @@ const sitemapPaths = [
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((url) => `  <url><loc>${siteOrigin}${url}</loc></url>`).join("\n")}\n</urlset>\n`;
 fs.writeFileSync(path.join(root, "public", "sitemap.xml"), sitemap);
 fs.writeFileSync(path.join(root, "public", "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`);
-fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "ekimachi-zufu-v56\n2026-10-26\n");
+fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "machierabi-annai-v58\n2026-10-30\n");
 
 const fingerprints = Object.fromEntries(["assets/app.js", "assets/data.js", "assets/evidence.js", "assets/audit-data.js", "assets/evidence-view.js", "assets/search.js", "assets/style.css", "assets/interface-v34.css", "index.html"].map((file) => [file, createHash("sha256").update(fs.readFileSync(path.join(root, "public", file))).digest("hex")]));
-fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "ekimachi-zufu-v56", date: "2026-10-26", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
+fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "machierabi-annai-v58", date: "2026-10-30", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
 
 console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied Leaflet browser assets.`);

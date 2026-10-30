@@ -1,6 +1,6 @@
 {
-  "version": "ekimachi-zufu-v56",
-  "date": "2026-10-26",
+  "version": "machierabi-annai-v58",
+  "date": "2026-10-30",
   "stationCount": 15,
   "audit": {
     "total": 270,
@@ -10,7 +10,7 @@
     "pending": 0
   },
   "fingerprints": {
-    "assets/app.js": "9d3aa8794b7a7758190938e031110f3559c2dc1d8919a8d8c96e23ba59ffb0c7",
+    "assets/app.js": "de8fde681281a200321377ed14181286e9276142556db0084204ff4f7f2ec959",
     "assets/data.js": "f8b8c7313819d5f9935b71e6b5ffc2588e6112118a951b35a36dd14dd65a11fd",
     "assets/evidence.js": "17b5107a32d44fcd9ac7c1f3fcd4cbe801b95af8d57590ae95ebc86c1d50efcf",
     "assets/audit-data.js": "50e08374388ee6026a6d63592c138dc2eb7b35f77fea9260be896fd33f9bc9b3",
@@ -18,6 +18,6 @@
     "assets/search.js": "6e6237cefeeb68cde227221cdce259783bc0e3cf092189e3387b6d29f5cd9921",
     "assets/style.css": "da03ab472869eec7db06fe2325b490dd5f1c6f35684dd4afddbed478950a2050",
     "assets/interface-v34.css": "3373d24ae52bf4eeb8dc57c20c7c17941722c05dcb2c5ee9a852d42c0bdb1703",
-    "index.html": "2eb980bf261ab0a3fc96193a66197138f81e4b47e3b373d77408c87d83cafd74"
+    "index.html": "03b3443f48f51d5c487f2ad2e41a0fcd71bdf71214eca78de065e36e74a42393"
   }
 }
