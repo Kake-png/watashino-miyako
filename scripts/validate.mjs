@@ -94,8 +94,8 @@ if (!revisionCss.includes("width: 3px;")) errors.push("Section heading rail is m
 if (!revisionCss.includes(".search-first .condition-drawer > summary { margin-top: 7px; }")) errors.push("Condition section spacing is missing");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('href="/assets/interface-v34.css?v=59"')) errors.push("Home is missing the versioned interface stylesheet");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=59"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('href="/assets/interface-v34.css?v=60"')) errors.push("Home is missing the versioned interface stylesheet");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=60"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");

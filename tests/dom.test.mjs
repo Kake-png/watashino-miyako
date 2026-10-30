@@ -12,12 +12,12 @@ const app = fs.readFileSync(path.join(publicRoot, "assets/app.js"), "utf8").repl
 const leaflet = fs.readFileSync(path.join(publicRoot, "vendor/leaflet.js"), "utf8");
 const tick = () => new Promise((resolve) => setTimeout(resolve, 35));
 
-async function openPage(route, { map = true, storage = {} } = {}) {
+async function openPage(route, { map = true, storage = {}, query = "" } = {}) {
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", (error) => errors.push(error.message));
   const dom = new JSDOM(fs.readFileSync(path.join(publicRoot, route, "index.html"), "utf8"), {
-    url: `https://atlas.test/${route ? `${route}/` : ""}`, runScripts: "outside-only", pretendToBeVisual: true, virtualConsole
+    url: `https://atlas.test/${route ? `${route}/` : ""}${query}`, runScripts: "outside-only", pretendToBeVisual: true, virtualConsole
   });
   const window = dom.window;
   window.matchMedia = () => ({ matches: true });
@@ -70,15 +70,22 @@ test("all available railway buttons render paths; paired JR routes remain drawn"
   dom.window.close();
 });
 
-test("each theme entrance initializes correct candidates", async () => {
+test("theme guides list matching stations and map links show their active conditions", async () => {
   for (const theme of ATLAS_DATA.themePresets) {
     const { dom, document } = await openPage(`themes/${theme.id}`, { map: false });
-    assert.equal(document.querySelectorAll(".station-row").length, ATLAS_DATA.stations.filter((s) => search.matchesTheme(s, theme)).length);
-    document.querySelector(`#perspective-list [data-perspective="${theme.id}"]`).click();
-    assert.equal(document.querySelector("#theme-context").hidden, false);
-    assert.equal(document.querySelector("#theme-context").textContent, "選択中：なし");
-    assert.equal(document.querySelectorAll(".station-row").length, 15);
-    assert(dom.window.location.search.includes("themes="));
+    assert.equal(document.querySelector('#atlas'), null);
+    const links=[...document.querySelectorAll('.theme-map-link')];
+    assert.equal(links.length,theme.id==='weekend-mobility'?3:1);
+    for (const link of links) {
+      const params=new URL(link.href).searchParams;
+      const state=search.readSearchState(params,ATLAS_DATA);
+      const expected=search.filterStations(ATLAS_DATA.stations,ATLAS_DATA.routeLabels,ATLAS_DATA.themePresets,state);
+      const rows=[...link.closest('section').querySelectorAll('.theme-station h3 a')];
+      assert.deepEqual(rows.map(a=>a.pathname.split('/')[2]),expected.map(s=>s.slug));
+      const map=await openPage('',{map:false,query:'?'+params.toString()});
+      assert.equal(map.document.querySelectorAll('.station-row').length,expected.length);
+      map.dom.window.close();
+    }
     dom.window.close();
   }
 });

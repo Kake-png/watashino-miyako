@@ -681,7 +681,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=59";
         <div><small>車と道路</small><p>${escapeHtml(practical.car)}</p></div>
         <div><small>散歩・自転車</small><p>${escapeHtml(practical.outdoors)}</p></div>
       </section>
-      <nav class="station-lenses" aria-label="暮らし別に探す"><span>関連する暮らしの条件</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}#atlas">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/themes/">暮らし別の一覧</a></nav>
+      <nav class="station-lenses" aria-label="暮らし別に探す"><span>関連する暮らしの条件</span>${stationThemes.map((theme) => `<a href="${themeUrl(theme)}">${escapeHtml(theme.navLabel)}</a>`).join("")}<a href="/themes/">暮らし別の一覧</a></nav>
       <div class="station-body">
         <aside class="station-index"><h2>目次</h2><ol><li><a href="#viewpoint">特徴と確認点</a></li><li><a href="#station-map-section">地図で確認</a></li><li><a href="#photos">街の写真</a></li><li><a href="#life">暮らしのポイント</a></li><li><a href="#evidence">条件の根拠・出典</a></li><li><a href="#related">近い候補</a></li></ol></aside>
         <article class="station-content">
