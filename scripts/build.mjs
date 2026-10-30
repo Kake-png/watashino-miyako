@@ -40,8 +40,8 @@ const templates = path.join(root, "templates");
 const publishedPages = new Map();
 function finalizeHtml(html, relativePath) {
   const url = `${siteOrigin}/${relativePath ? `${relativePath.replaceAll(path.sep, "/")}/` : ""}`;
-  html = html.replaceAll("?v=57", "?v=58").replaceAll("?v=56", "?v=58").replaceAll("?v=54", "?v=58").replaceAll("?v=53", "?v=58").replaceAll("?v=52", "?v=58").replaceAll("?v=51", "?v=58").replaceAll("?v=50", "?v=58").replaceAll("?v=49", "?v=58").replaceAll("?v=48", "?v=58").replaceAll("?v=47", "?v=58").replaceAll("?v=46", "?v=58").replaceAll("?v=45", "?v=58").replaceAll("?v=44", "?v=58").replaceAll("?v=40", "?v=58").replaceAll("?v=34", "?v=58")
-    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=58"')
+  html = html.replaceAll("?v=57", "?v=59").replaceAll("?v=56", "?v=59").replaceAll("?v=54", "?v=59").replaceAll("?v=53", "?v=59").replaceAll("?v=52", "?v=59").replaceAll("?v=51", "?v=59").replaceAll("?v=50", "?v=59").replaceAll("?v=49", "?v=59").replaceAll("?v=48", "?v=59").replaceAll("?v=47", "?v=59").replaceAll("?v=46", "?v=59").replaceAll("?v=45", "?v=59").replaceAll("?v=44", "?v=59").replaceAll("?v=40", "?v=59").replaceAll("?v=34", "?v=59")
+    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=59"')
     .replaceAll("https://tiles.openfreemap.org", "https://tile.openstreetmap.org");
   html = html.replace("制定・最終更新：2026年9月21日", "制定：2026年9月21日・最終更新：2026年10月17日")
     .replace("駅徒歩10分以内・管理費等を除く平均", "HOME’Sの1K参考相場・管理費等を除く")
@@ -147,17 +147,18 @@ const writeDirectory = (relativePath, title, description, content) => writePage(
   .replaceAll("{{TITLE}}", escapeHtml(title)).replaceAll("{{DESCRIPTION}}", escapeHtml(description)).replace("{{CONTENT}}", content));
 writeDirectory("themes", "暮らし別に駅を探す", "休日や普段の過ごし方から候補駅を探せます。選んだ後でも、路線や具体的な条件で絞り込めます。", `<div class="entry-grid">${ATLAS_DATA.themePresets.map((theme) => `<a href="/themes/${theme.id}/"><h2>${escapeHtml(theme.navLabel)}</h2><p>${escapeHtml(theme.description)}</p><span>${ATLAS_DATA.stations.filter((station) => matchesTheme(station, theme)).length}駅の候補 →</span></a>`).join("")}</div><p class="data-note">確認済みの条件だけを検索に使います。確認中の条件も残っており、各駅ページと確認表に掲載しています。</p>`);
 writeDirectory("stations", "掲載駅一覧", "南東京〜横浜の15駅を掲載しています。交通・買い物・散歩先・夜の帰宅などを同じ項目で確認できます。", `<ul class="directory-list">${stationLinks(ATLAS_DATA.stations)}</ul>`);
-writeDirectory("routes", "路線別に駅を探す", "使いたい路線から掲載駅を探せます。徒歩10分以内の近隣駅も含み、駅ページでは直接乗れる路線と分けています。", ATLAS_DATA.routeGroups.map((group) => `<section><h2>${escapeHtml(group.label)}</h2><ul class="route-directory">${group.routes.map((route) => route.available === false ? `<li><span>${escapeHtml(route.label)}（掲載駅なし）</span></li>` : `<li><a href="/routes/${route.id}/"><span class="route-swatch" style="--route-color:${route.color}"></span>${escapeHtml(route.label)}<small>${ATLAS_DATA.stations.filter((station) => station.routes.includes(route.id)).length}駅 →</small></a></li>`).join("")}</ul></section>`).join(""));
+writeDirectory("routes", "路線別に駅を探す", "使いたい路線から掲載駅を探せます。徒歩10分以内の近隣駅も含み、駅ページでは直接乗れる路線と分けています。", ATLAS_DATA.routeGroups.map((group) => `<section><h2>${escapeHtml(group.label)}</h2><ul class="route-directory">${group.routes.map((route) => route.available === false ? `<li><span>${escapeHtml(route.label)}（掲載駅なし）</span></li>` : `<li><a href="/routes/${route.id}/"><span class="route-swatch" style="--route-color:${route.color}"></span>${escapeHtml(route.label)}<small>${route.mapOnly ? "路線表示のみ →" : `${ATLAS_DATA.stations.filter((station) => station.routes.includes(route.id)).length}駅 →`}</small></a></li>`).join("")}</ul></section>`).join(""));
 for (const route of ATLAS_DATA.routeGroups.flatMap((group) => group.routes).filter((route) => route.available !== false)) {
   const candidates = ATLAS_DATA.stations.filter((station) => station.routes.includes(route.id));
-  const title = `${route.label}から住む駅を探す`;
-  writePage(path.join("routes", route.id), homeTemplate
+  const routeTemplate = candidates.length ? homeTemplate : homeTemplate.replace('content="index,follow,max-image-preview:large"', 'content="noindex,follow"');
+  const title = route.mapOnly ? `${route.label}の路線図` : `${route.label}から住む駅を探す`;
+  writePage(path.join("routes", route.id), routeTemplate
     .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(title)}｜街えらび案内所</title>`)
-    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escapeHtml(route.label)}を使える掲載駅の候補。駅の交通・買い物・休日の条件を比べられます。">`)
+    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${route.mapOnly ? `${escapeHtml(route.label)}の路線の位置を地図で確認できます。沿線の掲載駅情報は準備中です。` : `${escapeHtml(route.label)}を使える掲載駅の候補。駅の交通・買い物・休日の条件を比べられます。`}">`)
     .replace('id="atlas-title">好きなことを、続けやすい街へ。', `id="atlas-title">${escapeHtml(title)}`)
     .replace('<body data-page="home">', `<body data-page="home" data-route-id="${route.id}">`)
     .replace('id="route-drawer"', 'id="route-drawer" open')
-    .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy"><h2>${escapeHtml(route.label)}を使える掲載駅</h2><p>路線全体の駅一覧ではなく、このサイトで掲載している候補駅です。駅名が異なる近隣駅から乗る場合も含みます。</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/routes/">他の路線から探す</a></p></section>`)
+    .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy"><h2>${escapeHtml(route.label)}を使える掲載駅</h2><p>${candidates.length ? "路線全体の駅一覧ではなく、このサイトで掲載している候補駅です。駅名が異なる近隣駅から乗る場合も含みます。" : "沿線の掲載駅は準備中です。現在は路線の位置を地図で確認できます。"}</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/routes/">他の路線から探す</a></p></section>`)
     .replace(/<!--DIRECTORY_START-->[\s\S]*?<!--DIRECTORY_END-->/, ""));
 }
 writeDirectory("criteria", "条件の判定基準", "全18条件の距離・規模・時間の基準です。確認済みの情報だけを検索に使います。", `<section><h2>組み合わせ方</h2><p>具体的な条件は「すべて満たす」が初期設定です。「どれか満たす」に切り替えられます。各暮らしテーマ内はいずれか、複数テーマ・路線・家賃の間はそれぞれANDで組み合わせます。</p></section>${ATLAS_DATA.filterGroups.map((group) => `<section><h2>${escapeHtml(group.label)}</h2><dl class="evidence-list">${group.tags.map((tag) => `<div><dt>${escapeHtml(ATLAS_DATA.tagLabels[tag])}</dt><dd>${escapeHtml(ATLAS_DATA.tagCriteria[tag])}</dd></div>`).join("")}</dl></section>`).join("")}<section><h2>時間と範囲のそろえ方</h2><p>徒歩は施設・運営者の公式案内を優先し、地図サービスが示す出口別の徒歩分数は、そのサービスの目安として記載します。独自に測距する場合は駅の出口から施設入口までの経路を80m/分で切り上げます。住所の代表点までの距離だけで境界上の判定は確定しません。</p><p>自転車は走行200m/分、押し歩き80m/分で計算する距離からの目安です。信号待ち・休憩は含みません。海・港には海に接する河口・運河の公開遊歩道を含め、公園内の人工池だけは含めません。</p><p>高速道路は車で出発できる駅前地点から方向別の入口までの、渋滞を含まない経路推計です。実際の所要時間とは異なります。</p><p>競馬場は開催時間帯の具体便で、乗車・乗換徒歩・接続待ち・最後の徒歩を合計します。最初の乗車前の待ち時間は除きます。すべての時刻で同じ時間とは限りません。</p></section><section><h2>確認済み・条件外・確認待ち</h2><p>対象・規模・アクセスなどがそろって確認できた「該当」だけを検索に含めます。条件外と確認待ちは別に記録し、各駅ページでも区別します。確認待ちを施設が存在しないという判断に置き換えません。</p><p><a href="/data-status/">15駅×18条件の確認状況</a></p></section><section><h2>1K家賃の目安</h2><p>2026年10月17日に、LIFULL HOME’Sの各駅「家賃相場」ページの1K欄を確認しました。駅徒歩10分以内の賃貸物件の平均賃料（管理費・駐車場代等を除く）を軸に、同社の過去データと独自ロジックで算出した参考値です。単純平均を当サイトで再集計した値や、実際の成約額ではありません。</p><p>個別の出典は各駅ページと比較表に掲載しています。築年数・面積・出口・物件の状況で賃料は変わるため、この額以下の物件が必ず見つかるという意味ではありません。</p></section>`);
@@ -185,14 +186,14 @@ const sitemapPaths = [
   "/", "/themes/", "/routes/", "/stations/", "/criteria/", "/data-status/", "/about/", "/privacy/", "/site-policy/",
   ...ATLAS_DATA.stations.map((station) => `/station/${station.slug}/`),
   ...ATLAS_DATA.themePresets.filter((theme) => ATLAS_DATA.stations.some((station) => matchesTheme(station, theme))).map((theme) => `/themes/${theme.id}/`),
-  ...ATLAS_DATA.routeGroups.flatMap((group) => group.routes.filter((route) => route.available !== false).map((route) => `/routes/${route.id}/`))
+  ...ATLAS_DATA.routeGroups.flatMap((group) => group.routes.filter((route) => route.available !== false && !route.mapOnly).map((route) => `/routes/${route.id}/`))
 ];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((url) => `  <url><loc>${siteOrigin}${url}</loc></url>`).join("\n")}\n</urlset>\n`;
 fs.writeFileSync(path.join(root, "public", "sitemap.xml"), sitemap);
 fs.writeFileSync(path.join(root, "public", "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`);
-fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "machierabi-annai-v58\n2026-10-30\n");
+fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "machierabi-annai-v59\n2026-10-30\n");
 
-const fingerprints = Object.fromEntries(["assets/app.js", "assets/data.js", "assets/evidence.js", "assets/audit-data.js", "assets/evidence-view.js", "assets/search.js", "assets/style.css", "assets/interface-v34.css", "index.html"].map((file) => [file, createHash("sha256").update(fs.readFileSync(path.join(root, "public", file))).digest("hex")]));
-fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "machierabi-annai-v58", date: "2026-10-30", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
+const fingerprints = Object.fromEntries(["assets/app.js", "assets/route-layout.js", "assets/data.js", "assets/evidence.js", "assets/audit-data.js", "assets/evidence-view.js", "assets/search.js", "assets/style.css", "assets/interface-v34.css", "index.html"].map((file) => [file, createHash("sha256").update(fs.readFileSync(path.join(root, "public", file))).digest("hex")]));
+fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "machierabi-annai-v59", date: "2026-10-30", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
 
 console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied Leaflet browser assets.`);

@@ -1,5 +1,5 @@
 {
-  "version": "machierabi-annai-v58",
+  "version": "machierabi-annai-v59",
   "date": "2026-10-30",
   "stationCount": 15,
   "audit": {
@@ -10,14 +10,15 @@
     "pending": 0
   },
   "fingerprints": {
-    "assets/app.js": "de8fde681281a200321377ed14181286e9276142556db0084204ff4f7f2ec959",
-    "assets/data.js": "f8b8c7313819d5f9935b71e6b5ffc2588e6112118a951b35a36dd14dd65a11fd",
+    "assets/app.js": "017ee31c495e61780c425bf077ab2aafbc7869b85fc7edd67b4ffe011bcd9f9a",
+    "assets/route-layout.js": "23f9f1eae0c34e4d8d2645b3330bc3ab3c862d9e3b146bf7743e033910dbde7e",
+    "assets/data.js": "b3ffd9c6c67bc04830d7d4d311780401a2c0b259494a4df48703d8370f70cf2f",
     "assets/evidence.js": "17b5107a32d44fcd9ac7c1f3fcd4cbe801b95af8d57590ae95ebc86c1d50efcf",
     "assets/audit-data.js": "50e08374388ee6026a6d63592c138dc2eb7b35f77fea9260be896fd33f9bc9b3",
     "assets/evidence-view.js": "a4c1b394684cadb5e6633e5a37ab283880da57c96977504c93682605d8c8fe27",
     "assets/search.js": "6e6237cefeeb68cde227221cdce259783bc0e3cf092189e3387b6d29f5cd9921",
     "assets/style.css": "da03ab472869eec7db06fe2325b490dd5f1c6f35684dd4afddbed478950a2050",
     "assets/interface-v34.css": "3373d24ae52bf4eeb8dc57c20c7c17941722c05dcb2c5ee9a852d42c0bdb1703",
-    "index.html": "03b3443f48f51d5c487f2ad2e41a0fcd71bdf71214eca78de065e36e74a42393"
+    "index.html": "0c7347b7ff7599fa143294ffe5050969972edb88bf5f60c2e1b5a3a0bf61fbb0"
   }
 }

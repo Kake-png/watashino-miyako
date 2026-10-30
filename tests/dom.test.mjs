@@ -1,4 +1,4 @@
-import {ROUTE_LANES,offsetRoutePoints} from "../public/assets/route-layout.js";
+import {layoutRoutes} from "../public/assets/route-layout.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -24,7 +24,7 @@ async function openPage(route, { map = true, storage = {} } = {}) {
   window.scrollTo = () => {};
   for(const [key,value] of Object.entries(storage))window.localStorage.setItem(key,value);
   window.ATLAS_DATA = ATLAS_DATA;
-  Object.assign(window, search, { evidenceHtml, ROUTE_LANES, offsetRoutePoints });
+  Object.assign(window, search, { evidenceHtml, layoutRoutes });
   Object.defineProperties(window.HTMLElement.prototype, {
     clientWidth: { get() { return this.id.includes("map") ? 900 : 490; } },
     clientHeight: { get() { return 700; } }
@@ -64,7 +64,8 @@ test("all available railway buttons render paths; paired JR routes remain drawn"
   document.querySelector('[data-route="jr-shonan-shinjuku"]').click();
   const paired = [...document.querySelectorAll(".leaflet-overlay-pane path")];
   assert(paired.length > original.length);
-  assert(original.every((d) => paired.some((p) => p.getAttribute("d") === d)), "First route moved when second route selected");
+  assert(paired.some(p => p.getAttribute("stroke") === "#00a7db"));
+  assert(paired.some(p => p.getAttribute("stroke") === "#e87524"));
   assert(paired.every((p) => !/NaN|Infinity/.test(p.getAttribute("d"))));
   dom.window.close();
 });
@@ -236,3 +237,14 @@ test('favorites tolerate malformed storage and synchronize other tabs',async()=>
  window.dispatchEvent(new window.StorageEvent('storage',{key:'atlas-favorite-stations-v1'}));
  assert.equal(document.querySelectorAll('.station-row').length,1);assert.equal(document.querySelector('.station-row').dataset.slug,'osaki');dom.window.close();
 });
+
+ test("central route map previews clearly disclose missing station coverage", async () => {
+   for (const id of ['jr-chuo-rapid', 'jr-chuo-sobu']) {
+     const {dom, document} = await openPage(`routes/${id}`);
+     assert(document.querySelector('.leaflet-overlay-pane path'), id);
+     assert(document.querySelector('#station-list').textContent.includes('掲載駅は準備中'));
+     assert(document.querySelector('meta[name="robots"]').content.includes('noindex'));
+     assert(!fs.readFileSync(path.join(publicRoot,'sitemap.xml'),'utf8').includes(`/routes/${id}/`));
+     dom.window.close();
+   }
+ });

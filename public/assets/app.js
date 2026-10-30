@@ -1,7 +1,7 @@
-import {ROUTE_LANES,offsetRoutePoints} from "/assets/route-layout.js?v=58";
-import { ATLAS_DATA } from "/assets/data.js?v=58";
-import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=58";
-import { evidenceHtml } from "/assets/evidence-view.js?v=58";
+import {layoutRoutes} from "/assets/route-layout.js?v=59";
+import { ATLAS_DATA } from "/assets/data.js?v=59";
+import { filterStations, matchesTheme, readSearchState, searchParamsFor } from "/assets/search.js?v=59";
+import { evidenceHtml } from "/assets/evidence-view.js?v=59";
 
 (() => {
   "use strict";
@@ -289,6 +289,7 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=58";
         button.type = "button";
         button.className = "route-chip";
         button.textContent = route.label;
+        if (route.mapOnly) button.title = "路線表示に対応。掲載駅は準備中です";
         button.dataset.route = route.id;
         button.style.setProperty("--route-color", route.color);
         button.setAttribute("aria-pressed", String(activeRoutes.has(route.id)));
@@ -394,48 +395,35 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=58";
       return mergeConnectedLines(lines);
     }
 
-    function offsetRouteCoordinates(routeId, coordinates) {
-      if (coordinates.length < 2) return coordinates.map(([lng, lat]) => [lat, lng]);
-      const rawPoints = coordinates.map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]));
-      // 引きの縮尺では短い測量点を間引いてからレーンをずらす。
-      // これにより、細かな折れが太いギザギザとして見えるのを防ぐ。
-      const simplifyTolerance = map.getZoom() <= 11 ? 2.5 : 0.8;
-      const points = leaflet.LineUtil?.simplify
-        ? leaflet.LineUtil.simplify(rawPoints, simplifyTolerance)
-        : rawPoints;
-      return offsetRoutePoints(points, ROUTE_LANES[routeId] || 0).map(point=>map.layerPointToLatLng([point.x,point.y]));
-    }
-
     function syncRouteLines() {
       if (!map || !leaflet?.polyline) return;
-      routeLineLayers.forEach((layer) => layer.remove());
+      routeLineLayers.forEach(layer => layer.remove());
       routeLineLayers.clear();
-      const routeIds = [...activeRoutes];
-      routeIds.forEach((routeId) => {
-        const route = routeById.get(routeId);
-        if (!route) return;
-        const lines = routeCoordinates(routeId).flatMap((coordinates) => {
-          let displayCoordinates;
-          try {
-            displayCoordinates = offsetRouteCoordinates(routeId, coordinates);
-          } catch (error) {
-            // 路線表示の補助処理が失敗しても、絞り込み操作そのものは止めない。
-            console.warn(`Route display fallback: ${routeId}`, error);
-            displayCoordinates = coordinates.map(([lng, lat]) => [lat, lng]);
-          }
-          if (displayCoordinates.length < 2) return [];
-          return [leaflet.polyline(
-            displayCoordinates,
-            { color: route.color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 0, interactive: false }
-          )];
-        });
-        if (!lines.length) return;
-        const layer = leaflet.layerGroup(lines).addTo(map);
-        routeLineLayers.set(routeId, layer);
+      const projected = [...activeRoutes].filter(id => routeById.has(id)).map(id => ({
+        id,
+        lines: routeCoordinates(id).map(coordinates => {
+          const points = coordinates.map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]));
+          return leaflet.LineUtil?.simplify ? leaflet.LineUtil.simplify(points, 0.8) : points;
+        })
+      }));
+      let display = projected;
+      try {
+        const origin = map.containerPointToLayerPoint([0, 0]);
+        const size = map.getSize();
+        display = layoutRoutes(projected, {left: origin.x, top: origin.y, right: origin.x+size.x, bottom: origin.y+size.y});
+      } catch (error) {
+        console.warn("Route display fallback", error);
+      }
+      display.forEach(({id, lines}) => {
+        const paths = lines.filter(line => line.length >= 2).map(line => leaflet.polyline(
+          line.map(point => map.layerPointToLatLng([point.x, point.y])),
+          {color: routeById.get(id).color, weight: 5, opacity: 0.96, lineCap: "round", lineJoin: "round", smoothFactor: 0, interactive: false}
+        ));
+        if (paths.length) routeLineLayers.set(id, leaflet.layerGroup(paths).addTo(map));
       });
     }
 
-    if (map) map.on("zoomend", syncRouteLines);
+    if (map) map.on("zoomend moveend", syncRouteLines);
 
     function rowHtml(station, index) {
       const nearbySelected = [...activeRoutes].filter((route) => station.nearbyRoutes.includes(route));
@@ -495,7 +483,11 @@ import { evidenceHtml } from "/assets/evidence-view.js?v=58";
         ? matches.map(rowHtml).join("")
         : '<p class="station-list-empty">確認済みの候補は0駅です。確認中の駅もあるため、該当する場所がないという意味ではありません。条件を一つ外して探せます。</p>';
       if(!matches.length && favoritesOnly){stationList.innerHTML=`<p class="station-list-empty">${favorites.size?'保存した駅に、今の条件に合う駅がありません。条件を見直すか、☆の絞り込みを解除してください。':'気になる駅はまだありません。一覧や駅ページの☆を押して保存できます。'}</p>`;}
-      if(!matches.length && !favoritesOnly){
+      const mapOnlySelected = [...activeRoutes].filter(id => routeById.get(id)?.mapOnly);
+      if (!matches.length && mapOnlySelected.length && !favoritesOnly) {
+        stationList.innerHTML = '<p class="station-list-empty">この路線の掲載駅は準備中です。路線の位置は地図で確認できます。</p>';
+      }
+      if(!matches.length && !favoritesOnly && !mapOnlySelected.length){
         const suggestions=[...activeTags].map(tag=>({tag,count:filterStations(stations,routeLabels,themePresets,{...currentState(),tags:[...activeTags].filter(t=>t!==tag)}).length})).filter(x=>x.count>0);
         stationList.innerHTML+=suggestions.map(({tag,count})=>`<button type="button" class="relax-condition" data-relax="${escapeHtml(tag)}">「${escapeHtml(tagLabels[tag])}」を必須から外すと${count}駅</button>`).join('');
         if(!suggestions.length) stationList.innerHTML+='<p>路線・家賃・駅名も含めて条件を見直してください。</p>';

@@ -8,6 +8,8 @@ const points=id=>display[id].features.flatMap(f=>f.geometry.coordinates);
 const near=(id,p)=>assert(points(id).some(q=>Math.hypot((q[0]-p[0])*.81,q[1]-p[1])<.004),`${id} must reach ${p}`);
 test('routes reach distant termini and shared operating sections beyond published stations',()=>{
  for(const [id,coordinates] of Object.entries({
+  'jr-chuo-rapid':[[139.767,35.681],[139.282,35.642]],
+  'jr-chuo-sobu':[[139.560,35.703],[140.113,35.613]],
   'jr-keihin-tohoku':[[139.624,35.907],[139.531,35.354],[139.619,35.401]],
   'jr-saikyo':[[139.624,35.907]],
   'jr-tokaido':[[139.078,35.103],[139.767,35.681]],
