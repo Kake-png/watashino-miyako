@@ -13,8 +13,7 @@ const slugs = new Set();
 const wrangler = JSON.parse(fs.readFileSync(path.join(projectRoot, "wrangler.jsonc"), "utf8"));
 if (wrangler.name !== "machierabi-annai") errors.push("Wrangler targets the wrong Worker name");
 if (wrangler.assets?.directory !== "./public") errors.push("Wrangler must deploy ./public as static assets");
-if (wrangler.main) errors.push("Static-only Worker must not define a main script");
-if (wrangler.assets?.binding) errors.push("Static-only Worker must not define an assets binding");
+if (wrangler.main || wrangler.assets?.binding || wrangler.assets?.run_worker_first) errors.push("Static-only deployment must not configure Worker bindings or worker-first routes");
 
 for (const station of stations) {
   if (slugs.has(station.slug)) errors.push(`Duplicate station slug: ${station.slug}`);
@@ -94,8 +93,8 @@ if (!revisionCss.includes("width: 3px;")) errors.push("Section heading rail is m
 if (!revisionCss.includes(".search-first .condition-drawer > summary { margin-top: 7px; }")) errors.push("Condition section spacing is missing");
 if (indexHtml.includes("unpkg.com/maplibre") || indexHtml.includes("maplibre-gl-csp")) errors.push("Home still references MapLibre assets");
 if (!indexHtml.includes('src="/vendor/leaflet.js?v=1.9.4"')) errors.push("Home is missing local Leaflet browser bundle");
-if (!indexHtml.includes('href="/assets/interface-v34.css?v=60"')) errors.push("Home is missing the versioned interface stylesheet");
-if (!indexHtml.includes('type="module" src="/assets/app.js?v=60"')) errors.push("Home is missing versioned module app script");
+if (!indexHtml.includes('href="/assets/interface-v34.css?v=63"')) errors.push("Home is missing the versioned interface stylesheet");
+if (!indexHtml.includes('type="module" src="/assets/app.js?v=63"')) errors.push("Home is missing versioned module app script");
 if (!indexHtml.includes('id="rent-max"')) errors.push("Home is missing the 1K rent filter");
 if (!indexHtml.includes('id="criteria-list"')) errors.push("Home is missing the criteria guide");
 if (!indexHtml.includes('id="route-list"')) errors.push("Home is missing the route filter list");

@@ -25,6 +25,17 @@ test('all pages have consistent identity, metadata and social image; indexable t
   assert(!descriptions.has(desc),'duplicate description: '+file);descriptions.add(desc);
  }
 });
+test('contact page links to the supplied Google Form and does not rely on a contact Worker', () => {
+ const html=fs.readFileSync(path.join(root,'contact/index.html'),'utf8');
+ const d=new JSDOM(html).window.document;
+ const link=d.querySelector('a[href="https://forms.gle/n291N3gCkJ53yYA27"]');
+ assert(link, 'Google Form link is present');
+ assert.equal(link.target, '_blank');
+ assert.equal(link.rel, 'noopener noreferrer');
+ assert(!html.includes('/api/contact'));
+ const wrangler=JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname,'../wrangler.jsonc'),'utf8'));
+ assert(!wrangler.main && !wrangler.assets.binding && !wrangler.assets.run_worker_first);
+});
 test('sitemap contains canonical indexable HTML only, with no query variants',()=>{
  const sitemap=fs.readFileSync(path.join(root,'sitemap.xml'),'utf8');
  for(const [,url] of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)){

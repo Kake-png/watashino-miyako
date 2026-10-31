@@ -42,8 +42,8 @@ const templates = path.join(root, "templates");
 const publishedPages = new Map();
 function finalizeHtml(html, relativePath) {
   const url = `${siteOrigin}/${relativePath ? `${relativePath.replaceAll(path.sep, "/")}/` : ""}`;
-  html = html.replaceAll("?v=59", "?v=60").replaceAll("?v=57", "?v=60").replaceAll("?v=56", "?v=60").replaceAll("?v=54", "?v=60").replaceAll("?v=53", "?v=60").replaceAll("?v=52", "?v=60").replaceAll("?v=51", "?v=60").replaceAll("?v=50", "?v=60").replaceAll("?v=49", "?v=60").replaceAll("?v=48", "?v=60").replaceAll("?v=47", "?v=60").replaceAll("?v=46", "?v=60").replaceAll("?v=45", "?v=60").replaceAll("?v=44", "?v=60").replaceAll("?v=40", "?v=60").replaceAll("?v=34", "?v=60")
-    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=60"')
+  html = html.replaceAll("?v=60", "?v=63").replaceAll("?v=59", "?v=63").replaceAll("?v=57", "?v=63").replaceAll("?v=56", "?v=63").replaceAll("?v=54", "?v=63").replaceAll("?v=53", "?v=63").replaceAll("?v=52", "?v=63").replaceAll("?v=51", "?v=63").replaceAll("?v=50", "?v=63").replaceAll("?v=49", "?v=63").replaceAll("?v=48", "?v=63").replaceAll("?v=47", "?v=63").replaceAll("?v=46", "?v=63").replaceAll("?v=45", "?v=63").replaceAll("?v=44", "?v=63").replaceAll("?v=40", "?v=63").replaceAll("?v=34", "?v=63")
+    .replace('href="/assets/interface-v34.css"', 'href="/assets/interface-v34.css?v=63"')
     .replaceAll("https://tiles.openfreemap.org", "https://tile.openstreetmap.org");
   html = html.replace("制定・最終更新：2026年9月21日", "制定：2026年9月21日・最終更新：2026年10月17日")
     .replace("駅徒歩10分以内・管理費等を除く平均", "HOME’Sの1K参考相場・管理費等を除く")
@@ -53,7 +53,7 @@ function finalizeHtml(html, relativePath) {
   }
   // One consistent navigation and footer on every route.
   html = html.replace(/<nav class="site-nav"[\s\S]*?<\/nav>/, `<nav class="site-nav" id="site-nav" aria-label="主要メニュー"><a href="/"${!relativePath ? ' aria-current="page"' : ""}>地図から探す</a><a href="/themes/"${relativePath.startsWith("themes") ? ' aria-current="page"' : ""}>暮らし別</a><a href="/routes/"${relativePath.startsWith("routes") ? ' aria-current="page"' : ""}>路線別</a><a href="/compare/"${relativePath === "compare" ? ' aria-current="page"' : ""}>駅を比べる <span class="compare-count" data-compare-count>0</span></a></nav>`);
-  html = html.replace(/<div class="footer-links">[\s\S]*?<\/div>/, '<div class="footer-links"><a href="/stations/">駅一覧</a><a href="/criteria/">判定基準</a><a href="/about/">運営・出典</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a></div>');
+  html = html.replace(/<div class="footer-links">[\s\S]*?<\/div>/, '<div class="footer-links"><a href="/stations/">駅一覧</a><a href="/criteria/">判定基準</a><a href="/about/">運営・出典</a><a href="/site-policy/">サイトポリシー</a><a href="/privacy/">プライバシー</a><a href="/contact/">お問い合わせ</a></div>');
   html = html.replace(/\s*<link rel="canonical"[^>]*>/g, "")
     .replace(/\s*<meta property="og:[^"]+"[^>]*>/g, "");
   const title = html.match(/<title>(.*?)<\/title>/)?.[1] || "街えらび案内所";
@@ -162,6 +162,7 @@ for (const route of ATLAS_DATA.routeGroups.flatMap((group) => group.routes).filt
     .replace("<!--THEME_STATIC-->", `<section class="theme-static-copy"><h2>${escapeHtml(route.label)}を使える掲載駅</h2><p>${candidates.length ? "路線全体の駅一覧ではなく、このサイトで掲載している候補駅です。駅名が異なる近隣駅から乗る場合も含みます。" : "沿線の掲載駅は準備中です。現在は路線の位置を地図で確認できます。"}</p><ul class="directory-list">${stationLinks(candidates)}</ul><p><a href="/routes/">他の路線から探す</a></p></section>`)
     .replace(/<!--DIRECTORY_START-->[\s\S]*?<!--DIRECTORY_END-->/, ""));
 }
+writeDirectory("contact", "お問い合わせ", "掲載情報や写真についてのご連絡はこちらからお送りください。", `<p>掲載情報・写真についてのご連絡や、サイトへのご意見は、下のフォームからお送りください。</p><p><a class="button" href="https://forms.gle/n291N3gCkJ53yYA27" target="_blank" rel="noopener noreferrer">お問い合わせフォームを開く</a></p><p class="data-note">Googleフォームが新しいタブで開きます。入力内容はGoogleフォームを通じて送信されます。詳しくは<a href="/privacy/">プライバシーポリシー</a>をご確認ください。</p>`);
 writeDirectory("criteria", "条件の判定基準", "全18条件の距離・規模・時間の基準です。確認済みの情報だけを検索に使います。", `<section><h2>組み合わせ方</h2><p>具体的な条件は「すべて満たす」が初期設定です。「どれか満たす」に切り替えられます。各暮らしテーマ内はいずれか、複数テーマ・路線・家賃の間はそれぞれANDで組み合わせます。</p></section>${ATLAS_DATA.filterGroups.map((group) => `<section><h2>${escapeHtml(group.label)}</h2><dl class="evidence-list">${group.tags.map((tag) => `<div><dt>${escapeHtml(ATLAS_DATA.tagLabels[tag])}</dt><dd>${escapeHtml(ATLAS_DATA.tagCriteria[tag])}</dd></div>`).join("")}</dl></section>`).join("")}<section><h2>時間と範囲のそろえ方</h2><p>徒歩は施設・運営者の公式案内を優先し、地図サービスが示す出口別の徒歩分数は、そのサービスの目安として記載します。独自に測距する場合は駅の出口から施設入口までの経路を80m/分で切り上げます。住所の代表点までの距離だけで境界上の判定は確定しません。</p><p>自転車は走行200m/分、押し歩き80m/分で計算する距離からの目安です。信号待ち・休憩は含みません。海・港には海に接する河口・運河の公開遊歩道を含め、公園内の人工池だけは含めません。</p><p>高速道路は車で出発できる駅前地点から方向別の入口までの、渋滞を含まない経路推計です。実際の所要時間とは異なります。</p><p>競馬場は開催時間帯の具体便で、乗車・乗換徒歩・接続待ち・最後の徒歩を合計します。最初の乗車前の待ち時間は除きます。すべての時刻で同じ時間とは限りません。</p></section><section><h2>確認済み・条件外・確認待ち</h2><p>対象・規模・アクセスなどがそろって確認できた「該当」だけを検索に含めます。条件外と確認待ちは別に記録し、各駅ページでも区別します。確認待ちを施設が存在しないという判断に置き換えません。</p><p><a href="/data-status/">15駅×18条件の確認状況</a></p></section><section><h2>1K家賃の目安</h2><p>2026年10月17日に、LIFULL HOME’Sの各駅「家賃相場」ページの1K欄を確認しました。駅徒歩10分以内の賃貸物件の平均賃料（管理費・駐車場代等を除く）を軸に、同社の過去データと独自ロジックで算出した参考値です。単純平均を当サイトで再集計した値や、実際の成約額ではありません。</p><p>個別の出典は各駅ページと比較表に掲載しています。築年数・面積・出口・物件の状況で賃料は変わるため、この額以下の物件が必ず見つかるという意味ではありません。</p></section>`);
 const conditionIds = Object.keys(ATLAS_DATA.tagLabels);
 const summary = ATLAS_DATA.auditSummary;
@@ -192,9 +193,9 @@ const sitemapPaths = [
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((url) => `  <url><loc>${siteOrigin}${url}</loc></url>`).join("\n")}\n</urlset>\n`;
 fs.writeFileSync(path.join(root, "public", "sitemap.xml"), sitemap);
 fs.writeFileSync(path.join(root, "public", "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}/sitemap.xml\n`);
-fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "machierabi-annai-v61\n2026-10-31\n");
+fs.writeFileSync(path.join(root, "public", "deployment-version.txt"), "machierabi-annai-v65\n2026-10-31\n");
 
 const fingerprints = Object.fromEntries(["assets/app.js", "assets/route-layout.js", "assets/data.js", "assets/evidence.js", "assets/audit-data.js", "assets/evidence-view.js", "assets/search.js", "assets/style.css", "assets/interface-v34.css", "index.html"].map((file) => [file, createHash("sha256").update(fs.readFileSync(path.join(root, "public", file))).digest("hex")]));
-fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "machierabi-annai-v61", date: "2026-10-31", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
+fs.writeFileSync(path.join(root, "public", "release.json"), JSON.stringify({ version: "machierabi-annai-v65", date: "2026-10-31", stationCount: ATLAS_DATA.stations.length, audit: ATLAS_DATA.auditSummary, fingerprints }, null, 2) + "\n");
 
 console.log(`Built ${ATLAS_DATA.stations.length} station pages, ${ATLAS_DATA.themePresets.length} theme pages, and copied Leaflet browser assets.`);

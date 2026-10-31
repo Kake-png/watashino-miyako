@@ -693,3 +693,8 @@ body,
 .theme-detail {font-size:.9rem;}
 .theme-map-link {display:inline-block;padding:.65rem 1rem;border:1px solid currentColor;text-decoration:none;}
 @media(max-width:700px){.theme-stations{grid-template-columns:1fr}.theme-results{margin-block:1.5rem 2rem}.theme-station-heading{gap:.5rem}}
+.theme-primary-search { margin: 0 0 1.5rem; }
+.theme-primary-search p { font-size: .85rem; margin: .45rem 0 0; line-height: 1.6; }
+#contact-form input:not([type="hidden"]),#contact-form textarea { width: min(100%, 42rem); padding: .6rem; font: inherit; border: 1px solid #667974; border-radius: 3px; }
+#contact-form label { font-weight: 700; }
+#contact-submit { padding: .65rem 1.4rem; font: inherit; }

@@ -74,7 +74,7 @@ test("theme guides list matching stations and map links show their active condit
   for (const theme of ATLAS_DATA.themePresets) {
     const { dom, document } = await openPage(`themes/${theme.id}`, { map: false });
     assert.equal(document.querySelector('#atlas'), null);
-    const links=[...document.querySelectorAll('.theme-map-link')];
+    const links=[...document.querySelectorAll('.theme-results .theme-map-link')];
     assert.equal(links.length,theme.id==='weekend-mobility'?3:1);
     for (const link of links) {
       const params=new URL(link.href).searchParams;
@@ -84,8 +84,27 @@ test("theme guides list matching stations and map links show their active condit
       assert.deepEqual(rows.map(a=>a.pathname.split('/')[2]),expected.map(s=>s.slug));
       const map=await openPage('',{map:false,query:'?'+params.toString()});
       assert.equal(map.document.querySelectorAll('.station-row').length,expected.length);
+      const hobby=params.get('hobbies');
+      if(hobby) { assert.equal(map.document.querySelector(`[data-hobby="${hobby}"]`).getAttribute('aria-pressed'),'true'); map.document.querySelector(`[data-hobby="${hobby}"]`).click(); assert.equal(map.document.querySelectorAll('.station-row').length,ATLAS_DATA.stations.length); }
       map.dom.window.close();
     }
+    const primary=document.querySelector('.theme-primary-map-link');
+    assert(primary);
+    const params=new URL(primary.href).searchParams;
+    const state=search.readSearchState(params,ATLAS_DATA);
+    const expected=search.filterStations(ATLAS_DATA.stations,ATLAS_DATA.routeLabels,ATLAS_DATA.themePresets,state);
+    assert.equal(state.matchMode,'all');
+    const map=await openPage('',{map:false,query:'?'+params.toString()});
+    assert.equal(map.document.querySelectorAll('.station-row').length,expected.length);
+    for(const tag of state.tags) assert.equal(map.document.querySelector(`[data-tag="${tag}"]`).dataset.priority,'required');
+    const hobby=params.get('hobbies');
+    if(hobby) {
+      const button=map.document.querySelector(`[data-hobby="${hobby}"]`);
+      assert.equal(button.getAttribute('aria-pressed'),'true');
+      button.click();
+      assert.equal(map.document.querySelectorAll('.station-row').length,ATLAS_DATA.stations.length);
+    }
+    map.dom.window.close();
     dom.window.close();
   }
 });
