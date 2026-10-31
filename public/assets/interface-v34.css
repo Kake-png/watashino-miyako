@@ -23,6 +23,7 @@ html { font-size: 16px; }
 .directory-title p { max-width: 70ch; margin-top: 10px; }
 .entry-links { display: flex; flex-wrap: wrap; gap: 10px 24px; padding: 16px 22px; border-bottom: 1px solid var(--rule); background: #fff; }
 .entry-links a, .evidence-section a, .directory-page a { color: var(--green); text-underline-offset: 4px; }
+.directory-page a.button { color: #fff; }
 .entry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; }
 .entry-grid > a { display: block; padding: 18px 0; border-top: 2px solid var(--rule); text-decoration: none; }
 .entry-grid h2 { margin: 0 0 8px; font-size: 22px; }
